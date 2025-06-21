@@ -4,9 +4,7 @@
   config,
   inputs,
   ...
-}:
-
-{
+}: {
   # https://devenv.sh/basics/
   env.GREET = "devenv";
   env = {
@@ -16,7 +14,7 @@
   };
 
   # https://devenv.sh/packages/
-  packages = with pkgs; [ talosctl ];
+  packages = with pkgs; [talosctl kubeseal];
 
   # https://devenv.sh/languages/
   # languages.rust.enable = true;
