@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: privatebin-cert
+  namespace: privatebin
+spec:
+  secretName: privatebin-tls
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  dnsNames:
+    - privatebin.local.gwg313.xyz
