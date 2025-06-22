@@ -11,6 +11,12 @@ spec:
     repoURL: https://istio-release.storage.googleapis.com/charts
     chart: cni
     targetRevision: 1.22.1
+    helm:
+      values: |
+        cni:
+          enabled: true
+          chained: false
+          logLevel: info
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system

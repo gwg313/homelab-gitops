@@ -7,5 +7,6 @@ spec:
   selector:
     app: privatebin
   ports:
-  - port: 80
-    targetPort: 8080
+    - name: http
+      port: 80          # Service port
+      targetPort: 8080  # Container port

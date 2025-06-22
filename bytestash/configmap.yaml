@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bytestash-config
+  namespace: bytestash
+data:
+  BASE_PATH: ""
+  TOKEN_EXPIRY: "24h"
+  ALLOW_NEW_ACCOUNTS: "true"
+  DEBUG: "true"
+  DISABLE_ACCOUNTS: "false"
+  DISABLE_INTERNAL_ACCOUNTS: "false"
+  OIDC_ENABLED: "false"
+  OIDC_DISPLAY_NAME: ""
+  OIDC_ISSUER_URL: ""
+  OIDC_CLIENT_ID: ""
+  OIDC_CLIENT_SECRET: ""
+  OIDC_SCOPES: ""

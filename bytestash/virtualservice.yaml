@@ -1,16 +1,16 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: privatebin
-  namespace: privatebin
+  name: bytestash
+  namespace: bytestash
 spec:
   hosts:
-    - "privatebin.local.gwg313.xyz"
+    - "bytestash.local.gwg313.xyz"
   gateways:
-    - privatebin/privatebin-gateway
+    - bytestash/bytestash-gateway
   http:
     - route:
         - destination:
-            host: privatebin
+            host: bytestash
             port:
               number: 80

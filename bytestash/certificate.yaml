@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bytestash-cert
+  namespace: istio-system
+spec:
+  secretName: bytestash-cert
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  commonName: bytestash.local.gwg313.xyz
+  dnsNames:
+    - bytestash.local.gwg313.xyz

@@ -14,7 +14,12 @@ spec:
         app: privatebin
     spec:
       containers:
-      - name: privatebin
-        image: privatebin/nginx-fpm-alpine:latest
-        ports:
-        - containerPort: 8080
+        - name: privatebin
+          image: privatebin/nginx-fpm-alpine:latest
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

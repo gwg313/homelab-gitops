@@ -5,7 +5,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: you@example.com
+    email: gwg313@pm.me
     privateKeySecretRef:
       name: letsencrypt-dns-key
     solvers:
