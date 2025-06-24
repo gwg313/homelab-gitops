@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: soft-serve-admin-key
+  namespace: soft-serve
+spec:
+  encryptedData:
+    admin.pub: AgCdP1ajWCzibsQ049mEzZ/vLRnpeSX+tRuLy5uCG6Yf3ghtW/ZHRCeOb2JGs6d2x2BY2weu8JadVFgnrh3Xg+o8G5+c+muItiVp/ZfG/QATAybyyk9xtsPLn0LHWQaLtRMs7kESgBLyCzm/5djtv97+VsErw6fdAYB1cQd8bHoC0xQ7l/SzNR0l9a4RMnYXuYxJFPbxSOBMpPJ62fS67uwwBQr99orCl1CeRlHFI2jATB7SixZBPcXsHISx4j5dYqEF+XxNprMfn60Ca8Ru2oAj3u3wxppeVbnT0+emEmg96PHp9qswXJ7HOf8lrwGbg+fobDhbXlZ55Cw8X0QABjgpaQPBRHavxB64YxgRX+/d4i5Mu2ovw5ss85en9GezKUaqNk5HrD23Yz9UNUhwGubms9Dca3oL+SscSEMFgdp8RBC5QbdQikcI+VR34gRrhnpCcI7xEkM4c33yfMdl4FseF6zIMcNfdwQx6dPor2AkElPtehrUMeSy/Ahg6cn/FXG3JN5xeZeTfmQwIw8cGFw4lQyXHMLQfTrXJ8rP0YlFnEYE5KvdnWqWbJRFOj8rPF7iMtWoB19cHQB9WzDVOAAzrK+Z1N05rYo6fLycheuJ4uC3X5b19CN3KaNLPgzFUOLN4e+6uz6z8LcrPbtHNHbLENIZb0yeaNy6Qpkknln51aIbt/hX31/KcJyifaH2AGxTESUfcMcEUa6eNqxPpfonDH6D6h9HyI6DW6awqTiHS+pTa5XwDfcwfSjRC7A7zOD9P0peTSTJBVkZkE0N6El2sSSfNJJWnOa8gRgGMkmyPHErPyEdwQnUgzXe7obP6scaTw==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: soft-serve-admin-key
+      namespace: soft-serve

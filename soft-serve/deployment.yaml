@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,6 +21,12 @@ spec:
           ports:
             - containerPort: 23231
             - containerPort: 3000
+          env:
+            - name: SOFT_SERVE_INITIAL_ADMIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soft-serve-admin-key
+                  key: admin.pub
           volumeMounts:
             - name: soft-serve-data
               mountPath: /data

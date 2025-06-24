@@ -17,3 +17,9 @@ spec:
         credentialName: soft-serve-cert
       hosts:
         - git.local.gwg313.xyz
+    - port:
+        number: 23231
+        name: ssh
+        protocol: TCP
+      hosts:
+        - git.local.gwg313.xyz
