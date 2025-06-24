@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soft-serve
+  namespace: soft-serve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: soft-serve
+  template:
+    metadata:
+      labels:
+        app: soft-serve
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: soft-serve
+          image: charmcli/soft-serve:latest
+          ports:
+            - containerPort: 23231
+            - containerPort: 3000
+          volumeMounts:
+            - name: soft-serve-data
+              mountPath: /data
+      volumes:
+        - name: soft-serve-data
+          persistentVolumeClaim:
+            claimName: soft-serve-pvc

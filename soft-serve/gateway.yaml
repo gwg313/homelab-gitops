@@ -1,0 +1,19 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: soft-serve-gateway
+  namespace: soft-serve
+spec:
+  selector:
+    istio: gateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: soft-serve-cert
+      hosts:
+        - git.local.gwg313.xyz
