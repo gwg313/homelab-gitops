@@ -1,6 +1,8 @@
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
 metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
   name: default
   namespace: istio-system
 spec:

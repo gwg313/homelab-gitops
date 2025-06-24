@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: forgejo
+spec:
+  hosts:
+    - forgejo.local.gwg313.xyz
+  gateways:
+    - forgejo-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: forgejo
+            port:
+              number: 3000

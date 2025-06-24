@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+  labels:
+    app: forgejo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo
+  template:
+    metadata:
+      labels:
+        app: forgejo
+    spec:
+      containers:
+        - name: forgejo
+          image: codeberg.org/forgejo/forgejo:latest-rootless
+          ports:
+            - containerPort: 3000
+            - containerPort: 2222
+          env:
+            - name: FORGEJO__server__ROOT_URL
+              value: "https://forgejo.local.gwg313.xyz/"
+            - name: FORGEJO__ssh__START_SSH_SERVER
+              value: "true"
+            - name: FORGEJO__ssh__PORT
+              value: "2222"
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: forgejo-pvc
