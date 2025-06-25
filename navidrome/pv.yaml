@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: navidrome-data-pv
+  namespace: navidrome
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz:3260
+    iqn: iqn.2005-10.org.freenas.ctl:navidrome
+    lun: 0
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: navidrome-iscsi-auth
+  claimRef:
+    namespace: navidrome
+    name: navidrome-data
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: navidrome-music-pv
+  namespace: navidrome
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  nfs:
+    path: /mnt/tank/music-ro
+    server: truenas.local.gwg313.xyz
