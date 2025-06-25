@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
         - name: forgejo
-          image: codeberg.org/forgejo/forgejo:latest-rootless
+          image: codeberg.org/forgejo/forgejo:11-rootless
+
           ports:
             - containerPort: 3000
             - containerPort: 2222
@@ -24,9 +25,9 @@ spec:
             - name: FORGEJO__server__ROOT_URL
               value: "https://forgejo.local.gwg313.xyz/"
             - name: FORGEJO__ssh__START_SSH_SERVER
-              value: "true"
-            - name: FORGEJO__ssh__PORT
-              value: "2222"
+              value: "false"
+            # - name: FORGEJO__ssh__PORT
+            #   value: "2222"
           volumeMounts:
             - name: data
               mountPath: /data
