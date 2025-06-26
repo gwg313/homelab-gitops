@@ -4,16 +4,32 @@ metadata:
   name: harbor
   namespace: harbor
 spec:
+  gateways:
+    - istio-ingressgateway.istio-system.svc.cluster.local
   hosts:
     - harbor.local.gwg313.xyz
-  gateways:
-    - harbor-gateway
   http:
     - match:
         - uri:
-            prefix: /
+            prefix: /api/
+        - uri:
+            prefix: /service/
+        - uri:
+            prefix: /chartrepo
+        - uri:
+            prefix: /c/
+        - uri:
+            prefix: /v1/
+        - uri:
+            prefix: /v2/
       route:
         - destination:
             host: harbor-core
             port:
               number: 80
+    - route:
+        - destination:
+            host: harbor-portal
+            port:
+              number: 80
+      timeout: 30s

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: forgejo
+  namespace: forgejo
   labels:
     app: forgejo
 spec:
@@ -16,11 +17,14 @@ spec:
       labels:
         app: forgejo
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       terminationGracePeriodSeconds: 30
       containers:
         - name: forgejo
           image: codeberg.org/forgejo/forgejo:11-rootless
-
           ports:
             - containerPort: 3000
             - containerPort: 2222
@@ -29,12 +33,14 @@ spec:
               value: "https://git.gwg313.xyz/"
             - name: FORGEJO__ssh__START_SSH_SERVER
               value: "false"
-            # - name: FORGEJO__ssh__PORT
-            #   value: "2222"
           volumeMounts:
-            - name: data
-              mountPath: /data
+            - name: forgejo-volume
+              mountPath: /var/lib/gitea
+              subPath: data
+            - name: forgejo-volume
+              mountPath: /etc/gitea
+              subPath: config
       volumes:
-        - name: data
+        - name: forgejo-volume
           persistentVolumeClaim:
             claimName: forgejo-pvc
