@@ -1,12 +1,14 @@
+---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: privatebin-cert
-  namespace: privatebin
+  name: yopass-cert
+  namespace: istio-system
 spec:
-  secretName: privatebin-tls
+  secretName: yopass-cert
   issuerRef:
     name: letsencrypt-dns
     kind: ClusterIssuer
   dnsNames:
-    - privatebin.local.gwg313.xyz
+    - pastebin.local.gwg313.xyz
+    - pastebin.gwg313.xyz
