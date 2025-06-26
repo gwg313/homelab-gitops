@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: harbor
+  namespace: harbor
+spec:
+  hosts:
+    - harbor.local.gwg313.xyz
+  gateways:
+    - harbor-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: harbor-core
+            port:
+              number: 80

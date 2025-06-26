@@ -1,0 +1,57 @@
+expose:
+  type: ingress
+  ingress:
+    hosts:
+      core: harbor.local.gwg313.xyz
+    annotations:
+      kubernetes.io/ingress.class: istio
+      cert-manager.io/cluster-issuer: letsencrypt
+    tls:
+      enabled: true
+      secretName: harbor-cert
+
+externalURL: https://harbor.local.gwg313.xyz
+
+persistence:
+  enabled: true
+  resourcePolicy: keep
+
+  imageChartStorage:
+    type: filesystem
+    filesystem:
+      rootdirectory: /storage
+
+  registry:
+    enabled: true
+    existingClaim: harbor-registry
+
+  chartmuseum:
+    enabled: false  # Disable if not used or you didn’t create a PVC for it
+
+  jobservice:
+    enabled: true
+    existingClaim: harbor-jobservice
+
+  trivy:
+    enabled: true
+    existingClaim: data-harbor-trivy-0
+
+  database:
+    internal:
+      persistentVolumeClaim:
+        existingClaim: database-data-harbor-database-0
+
+  redis:
+    internal:
+      persistentVolumeClaim:
+        existingClaim: data-harbor-redis-0
+
+harborAdminPasswordRef:
+  name: harbor-admin
+  key: HARBOR_ADMIN_PASSWORD
+
+notary:
+  enabled: false
+
+clair:
+  enabled: false
