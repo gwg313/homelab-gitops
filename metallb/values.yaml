@@ -25,7 +25,25 @@ metallb:
         peer-asn:    65551         # ASN you set on OPNsense
         my-asn:      64512         # <<< MUST MATCH “Remote AS” on OPNsense
         hold-time:   90s
+        source-address: 10.1.10.3  # Talos node IP (optional but fine)
+
+      - peer-address: 10.1.10.1    # OPNsense LAN IP
+        peer-asn:    65551         # ASN you set on OPNsense
+        my-asn:      64512         # <<< MUST MATCH “Remote AS” on OPNsense
+        hold-time:   90s
         source-address: 10.1.10.4  # Talos node IP (optional but fine)
+
+      - peer-address: 10.1.10.1    # OPNsense LAN IP
+        peer-asn:    65551         # ASN you set on OPNsense
+        my-asn:      64512         # <<< MUST MATCH “Remote AS” on OPNsense
+        hold-time:   90s
+        source-address: 10.1.10.5  # Talos node IP (optional but fine)
+
+      - peer-address: 10.1.10.1    # OPNsense LAN IP
+        peer-asn:    65551         # ASN you set on OPNsense
+        my-asn:      64512         # <<< MUST MATCH “Remote AS” on OPNsense
+        hold-time:   90s
+        source-address: 10.1.10.6  # Talos node IP (optional but fine)
         # router-id optional – can omit or make unique per node
     address-pools:
       - name: default
