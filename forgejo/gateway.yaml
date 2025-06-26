@@ -2,6 +2,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: forgejo-gateway
+  namespace: forgejo
 spec:
   selector:
     istio: gateway
@@ -14,4 +15,6 @@ spec:
         mode: SIMPLE
         credentialName: forgejo-cert
       hosts:
-        - forgejo.local.gwg313.xyz
+        - git.local.gwg313.xyz
+        - git.gwg313.xyz
+        - git.zerotier.gwg313.xyz

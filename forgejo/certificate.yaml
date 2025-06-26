@@ -9,6 +9,7 @@ spec:
   issuerRef:
     name: letsencrypt-dns
     kind: ClusterIssuer
-  commonName: forgejo.local.gwg313.xyz
   dnsNames:
-    - forgejo.local.gwg313.xyz
+    - git.local.gwg313.xyz
+    - git.gwg313.xyz
+    - git.zerotier.gwg313.xyz
