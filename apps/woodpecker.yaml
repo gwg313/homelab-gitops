@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: woodpecker
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://woodpecker-ci.org/
+    chart: woodpecker
+    targetRevision: 3.2.0
+    helm:
+      releaseName: woodpecker
+      values: |
+        server:
+          env:
+            WOODPECKER_WORKSPACE_BASE: /tmp/woodpecker
+            WOODPECKER_OPEN: true
+            WOODPECKER_HOST: "https://ci.gwg313.xyz"
+            WOODPECKER_GITEA_CLIENT: "016122c0-7e98-460b-83f5-818a94a79158"
+            WOODPECKER_GITEA_SECRET: "gto_2o2dkvod2p3b4ucd6iogu72jymscl2dw3tdvmxzlug2lxvkyzg7a"
+          extraSecretNamesForEnvFrom:
+            - woodpecker-server-secrets
+          persistentVolume:
+            enabled: true
+            existingClaim: woodpecker-server-pvc5
+
+        agent:
+          enabled: true
+          extraSecretNamesForEnvFrom:
+            - woodpecker-agent-secrets
+          env:
+            WOODPECKER_SERVER: "woodpecker-server:9000"
+          persistence:
+            enabled: true
+            existingClaim: woodpecker-agent-pvc5
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: woodpecker
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
