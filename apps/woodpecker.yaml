@@ -14,11 +14,7 @@ spec:
       values: |
         server:
           env:
-            WOODPECKER_WORKSPACE_BASE: /tmp/woodpecker
-            WOODPECKER_OPEN: true
             WOODPECKER_HOST: "https://ci.gwg313.xyz"
-            WOODPECKER_GITEA_CLIENT: "016122c0-7e98-460b-83f5-818a94a79158"
-            WOODPECKER_GITEA_SECRET: "gto_2o2dkvod2p3b4ucd6iogu72jymscl2dw3tdvmxzlug2lxvkyzg7a"
           extraSecretNamesForEnvFrom:
             - woodpecker-server-secrets
           persistentVolume:

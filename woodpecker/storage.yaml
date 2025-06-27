@@ -97,3 +97,18 @@ spec:
     secretRef:
       name: woodpecker-iscsi-auth
       namespace: woodpecker
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-woodpecker-server-0
+  namespace: woodpecker
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: data-woodpecker-server-0
+  storageClassName: ""  # must match PV

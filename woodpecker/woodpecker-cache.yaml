@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: wp-cache-pv1
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual-nfs
+  nfs:
+    server: truenas.local.gwg313.xyz
+    path: /mnt/tank/k8s/democratic/woodpecker-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-cache-pvc1
+  namespace: woodpecker
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: manual-nfs
+  resources:
+    requests:
+      storage: 1Gi
