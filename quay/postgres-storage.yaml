@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: quay-postgres-pv
+spec:
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: quay-storage
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz
+    iqn: iqn.2005-10.org.freenas.ctl:quay-postgres
+    lun: 2
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: quay-iscsi-auth
+      namespace: quay-enterprise
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: quay-postgres
+  namespace: quay-enterprise
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: quay-storage
+  volumeName: quay-postgres-pv
+  resources:
+    requests:
+      storage: 8Gi

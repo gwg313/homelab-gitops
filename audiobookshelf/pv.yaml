@@ -1,0 +1,59 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: audiobookshelf-iscsi-pv
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  iscsi:
+    targetPortal: 10.1.10.2:3260
+    iqn: iqn.2025-06.local.gwg313:truenas.audiobookshelf-iscsi
+    lun: 0
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: audiobookshelf-iscsi-auth
+      namespace: audiobookshelf
+  storageClassName: audiobookshelf-iscsi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: audiobooks-pv
+  namespace: audiobookshelf
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  nfs:
+    path: /mnt/tank/media/audiobooks
+    server: truenas.local.gwg313.xyz
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: podcasts-pv-audiobooks
+  namespace: audiobookshelf
+spec:
+  capacity:
+    storage: 10Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  nfs:
+    path: /mnt/tank/media/podcasts
+    server: truenas.local.gwg313.xyz

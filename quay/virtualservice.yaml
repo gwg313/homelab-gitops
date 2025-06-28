@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: quay-vs
+  namespace: quay-enterprise
+spec:
+  hosts:
+    - quay.gwg313.xyz
+  gateways:
+    - quay-gateway
+  http:
+    - route:
+        - destination:
+            host: quay-quay
+            port:
+              number: 8080

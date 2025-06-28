@@ -1,0 +1,43 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audiobookshelf-data
+  namespace: audiobookshelf
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: audiobookshelf-iscsi
+  volumeName: audiobookshelf-iscsi-pv
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audiobooks-volume
+  namespace: audiobookshelf
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadOnlyMany
+  volumeName: audiobooks-pv
+  storageClassName: manual
+
+---
+kind: PersistentVolumeClaim
+metadata:
+  name: audiobooks-volume
+  namespace: audiobookshelf
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadOnlyMany
+  volumeName: audiobooks-pv
+  storageClassName: manual

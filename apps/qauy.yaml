@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quay
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: quay-enterprise
+  source:
+    repoURL: https://redhat-cop.github.io/quay-helm/
+    chart: quay
+    targetRevision: 3.10.2
+    helm:
+      releaseName: quay
+      values: |
+        enabledComponents:
+          - quay
+          - postgres
+          - redis
+
+        quay:
+          image:
+            repository: quay.io/projectquay/quay
+            tag: latest
+          configBundleSecret: quay-config-bundle
+          ingress:
+            enabled: false
+          service:
+            type: ClusterIP
+          persistentVolumeClaim:
+            existingClaim: quay-quay-config-storage
+
+        postgres:
+          persistence:
+            existingClaim: quay-postgres
+          service:
+            type: ClusterIP
+
+        redis:
+          persistence:
+            enabled: true
+            existingClaim: quay-redis
+          service:
+            type: ClusterIP
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
