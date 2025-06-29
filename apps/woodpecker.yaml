@@ -15,7 +15,6 @@ spec:
         server:
           env:
             WOODPECKER_HOST: "https://ci.gwg313.xyz"
-            WOODPECKER_PLUGINS_PRIVILEGED: "plugins/docker"
           extraSecretNamesForEnvFrom:
             - woodpecker-server-secrets
           persistentVolume:
@@ -29,6 +28,7 @@ spec:
             - woodpecker-agent-secrets
           env:
             WOODPECKER_SERVER: "woodpecker-server:9000"
+            WOODPECKER_MAX_WORKFLOWS: "5"
           persistence:
             enabled: true
             existingClaim: woodpecker-agent-pvc5
