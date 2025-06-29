@@ -9,5 +9,5 @@ spec:
     name: letsencrypt-dns
     kind: ClusterIssuer
   dnsNames:
-    - minio.gwg313.xyz
-    - minio-console.gwg313.xyz
+    - s3.gwg313.xyz
+    - s3-console.gwg313.xyz

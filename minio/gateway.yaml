@@ -12,7 +12,7 @@ spec:
         name: minio-api
         protocol: HTTPS
       hosts:
-        - minio.gwg313.xyz
+        - s3.gwg313.xyz
       tls:
         mode: SIMPLE
         credentialName: minio-cert
@@ -21,7 +21,7 @@ spec:
         name: minio-console
         protocol: HTTPS
       hosts:
-        - minio-console.gwg313.xyz
+        - s3-console.gwg313.xyz
       tls:
         mode: SIMPLE
         credentialName: minio-cert

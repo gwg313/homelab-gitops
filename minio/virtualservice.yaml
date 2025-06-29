@@ -6,7 +6,7 @@ metadata:
   namespace: minio
 spec:
   hosts:
-    - minio-console.gwg313.xyz
+    - s3-console.gwg313.xyz
   gateways:
     - minio-gateway
   http:
@@ -26,7 +26,7 @@ metadata:
   namespace: minio
 spec:
   hosts:
-    - minio.gwg313.xyz
+    - s3.gwg313.xyz
   gateways:
     - minio-gateway
   http:
