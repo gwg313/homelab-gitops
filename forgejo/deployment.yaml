@@ -33,6 +33,8 @@ spec:
               value: "https://git.gwg313.xyz/"
             - name: FORGEJO__ssh__START_SSH_SERVER
               value: "false"
+            - name: FORGEJO__webhook__ALLOWED_HOST_LIST
+              value: "ci.gwg313.xyz"
           volumeMounts:
             - name: forgejo-volume
               mountPath: /var/lib/gitea
