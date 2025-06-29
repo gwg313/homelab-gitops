@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: quay-config
+  name: harbor-config
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/gwg313/homelab-gitops
     targetRevision: main
-    path: quay
+    path: harbor-config
   destination:
     server: https://kubernetes.default.svc
-    namespace: quay-enterprise
+    namespace: harbor
   syncPolicy:
     automated:
       selfHeal: true

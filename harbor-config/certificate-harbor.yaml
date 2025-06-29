@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: harbor-cert-nginx
+  namespace: harbor
+spec:
+  secretName: harbor-cert-nginx
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  dnsNames:
+    - harbor.gwg313.xyz

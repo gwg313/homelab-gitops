@@ -1,18 +1,18 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: quay-gateway
-  namespace: quay-enterprise
+  name: harbor-gateway
+  namespace: harbor
 spec:
   selector:
-    istio: ingressgateway
+    istio: gateway
   servers:
     - port:
         number: 443
         name: https
         protocol: HTTPS
       hosts:
-        - quay.gwg313.xyz
+        - registry.gwg313.xyz
       tls:
         mode: SIMPLE
-        credentialName: quay-cert
+        credentialName: harbor-cert
