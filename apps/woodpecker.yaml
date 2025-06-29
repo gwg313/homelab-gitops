@@ -15,6 +15,7 @@ spec:
         server:
           env:
             WOODPECKER_HOST: "https://ci.gwg313.xyz"
+            WOODPECKER_PLUGINS_PRIVILEGED: "plugins/docker"
           extraSecretNamesForEnvFrom:
             - woodpecker-server-secrets
           persistentVolume:
@@ -23,6 +24,7 @@ spec:
 
         agent:
           enabled: true
+          replicaCount: 1
           extraSecretNamesForEnvFrom:
             - woodpecker-agent-secrets
           env:
@@ -30,6 +32,8 @@ spec:
           persistence:
             enabled: true
             existingClaim: woodpecker-agent-pvc5
+          securityContext:
+            privileged: true    
   destination:
     server: https://kubernetes.default.svc
     namespace: woodpecker
