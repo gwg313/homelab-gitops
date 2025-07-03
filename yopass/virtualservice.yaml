@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: yopass
+  namespace: yopass
+spec:
+  hosts:
+    - pastebin.gwg313.xyz
+    - pastebin.local.gwg313.xyz
+  gateways:
+    - yopass-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: yopass
+            port:
+              number: 1337

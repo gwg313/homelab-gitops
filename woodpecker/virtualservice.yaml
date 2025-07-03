@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: woodpecker
+  namespace: woodpecker
+spec:
+  gateways:
+    - woodpecker-gateway
+  hosts:
+    - ci.gwg313.xyz
+  http:
+    - route:
+        - destination:
+            host: woodpecker-server
+            port:
+              number: 80

@@ -1,0 +1,197 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: harbor-registry-pv
+spec:
+  capacity:
+    storage: 200Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: harbor-iscsi
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz
+    iqn: iqn.2005-10.org.freenas.ctl:harbor-registry
+    lun: 1
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: harbor-iscsi-auth
+      namespace: harbor
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-registry
+  namespace: harbor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: harbor-iscsi
+  volumeName: harbor-registry-pv
+  resources:
+    requests:
+      storage: 200Gi
+
+# Harbor: Jobservice
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: harbor-jobservice-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: harbor-iscsi
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz
+    iqn: iqn.2005-10.org.freenas.ctl:harbor-jobservice
+    lun: 0
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: harbor-iscsi-auth
+      namespace: harbor
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-jobservice
+  namespace: harbor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: harbor-iscsi
+  volumeName: harbor-jobservice-pv
+  resources:
+    requests:
+      storage: 10Gi
+
+# Harbor: Database
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: harbor-database-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: harbor-iscsi
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz
+    iqn: iqn.2005-10.org.freenas.ctl:harbor-database
+    lun: 2
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: harbor-iscsi-auth
+      namespace: harbor
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-database
+  namespace: harbor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: harbor-iscsi
+  volumeName: harbor-database-pv
+  resources:
+    requests:
+      storage: 10Gi
+
+# Harbor: Redis
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: harbor-redis-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: harbor-iscsi
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz
+    iqn: iqn.2005-10.org.freenas.ctl:harbor-redis
+    lun: 3
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: harbor-iscsi-auth
+      namespace: harbor
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-redis
+  namespace: harbor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: harbor-iscsi
+  volumeName: harbor-redis-pv
+  resources:
+    requests:
+      storage: 10Gi
+
+# Harbor: Trivy
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: harbor-trivy-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: harbor-iscsi
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz
+    iqn: iqn.2005-10.org.freenas.ctl:harbor-trivy
+    lun: 4
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: harbor-iscsi-auth
+      namespace: harbor
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: harbor-trivy
+  namespace: harbor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: harbor-iscsi
+  volumeName: harbor-trivy-pv
+  resources:
+    requests:
+      storage: 10Gi

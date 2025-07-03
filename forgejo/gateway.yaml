@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: forgejo-gateway
+  namespace: forgejo
+spec:
+  selector:
+    istio: gateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: forgejo-cert
+      hosts:
+        - git.local.gwg313.xyz
+        - git.gwg313.xyz
+        - git.zerotier.gwg313.xyz

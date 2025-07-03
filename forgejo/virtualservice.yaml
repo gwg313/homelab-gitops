@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  hosts:
+    - git.local.gwg313.xyz
+    - git.gwg313.xyz
+    - git.zerotier.gwg313.xyz
+  gateways:
+    - forgejo-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: forgejo
+            port:
+              number: 80

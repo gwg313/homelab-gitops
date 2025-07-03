@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bytestash
+  namespace: bytestash
+spec:
+  hosts:
+    - "bytestash.local.gwg313.xyz"
+  gateways:
+    - bytestash/bytestash-gateway
+  http:
+    - route:
+        - destination:
+            host: bytestash
+            port:
+              number: 80

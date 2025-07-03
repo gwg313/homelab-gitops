@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bytestash
+  namespace: bytestash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bytestash
+  template:
+    metadata:
+      labels:
+        app: bytestash
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      securityContext:
+        runAsNonRoot: false
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: bytestash
+          image: "ghcr.io/jordan-dalby/bytestash:latest"
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: bytestash-config
+            - secretRef:
+                name: bytestash-secret
+          volumeMounts:
+            - name: bytestash-storage
+              mountPath: /data/snippets
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: bytestash-storage
+          persistentVolumeClaim:
+            claimName: bytestash-pvc

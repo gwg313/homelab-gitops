@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: woodpecker
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://woodpecker-ci.org/
+    chart: woodpecker
+    targetRevision: 3.2.0
+    helm:
+      releaseName: woodpecker
+      values: "server:\n  env:\n    WOODPECKER_HOST: \"https://ci.gwg313.xyz\"\n  extraSecretNamesForEnvFrom:\n    - woodpecker-server-secrets\n  persistentVolume:\n    enabled: true\n    existingClaim: woodpecker-server-pvc5\n\nagent:\n  enabled: true\n  replicaCount: 1\n  extraSecretNamesForEnvFrom:\n    - woodpecker-agent-secrets\n  env:\n    WOODPECKER_SERVER: \"woodpecker-server:9000\"\n    WOODPECKER_MAX_WORKFLOWS: \"5\"\n  persistence:\n    enabled: true\n    existingClaim: woodpecker-agent-pvc5\n  securityContext:\n    privileged: true    \n"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: woodpecker
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

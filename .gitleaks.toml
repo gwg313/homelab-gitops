@@ -1,0 +1,5 @@
+[allowlist]
+description = "Ignore Kubernetes SealedSecrets"
+regexes = [
+  '''(?s)kind:\s*SealedSecret.*?encryptedData:.*?'''
+]

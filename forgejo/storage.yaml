@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: forgejo-pv
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz:3260
+    iqn: iqn.2005-10.org.freenas.ctl:forgejo
+    lun: 0
+    fsType: ext4
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: forgejo-iscsi-auth
+  claimRef:
+    namespace: forgejo
+    name: forgejo-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: forgejo-pvc
+  namespace: forgejo
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  volumeName: forgejo-pv

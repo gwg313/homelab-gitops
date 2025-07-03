@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: yopass-cert
+  namespace: istio-system
+spec:
+  secretName: yopass-cert
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  dnsNames:
+    - pastebin.local.gwg313.xyz
+    - pastebin.gwg313.xyz

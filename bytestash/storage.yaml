@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: bytestash-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  nfs:
+    path: /mnt/tank/docker-volumes/bytestash
+    server: truenas.local.gwg313.xyz
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bytestash-pvc
+  namespace: bytestash
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: bytestash-pv

@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: harbor
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: harbor
+  source:
+    repoURL: https://helm.goharbor.io
+    chart: harbor
+    targetRevision: 1.14.2
+    helm:
+      releaseName: harbor
+      values: |
+        externalURL: https://registry.gwg313.xyz
+        expose:
+          type: clusterIP
+          tls:
+            enabled: false
+            certSource: secret
+            secret:
+              secretName: harbor-cert-nginx
+        nginx:
+          replicas: 0
+
+        persistence:
+          persistentVolumeClaim:
+            registry:
+              existingClaim: harbor-registry
+            jobservice:
+              existingClaim: harbor-jobservice
+            trivy:
+              existingClaim: harbor-trivy
+            database:
+              existingClaim: harbor-database
+            redis:
+              existingClaim: harbor-redis
+            core:
+              existingClaim: harbor-core
+
+        ingress:
+          enabled: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

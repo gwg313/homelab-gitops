@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: navidrome-cert
+  namespace: istio-system
+spec:
+  secretName: navidrome-cert
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  # commonName: music.local.gwg313.xyz
+  dnsNames:
+    - music.local.gwg313.xyz
+    - music.gwg313.xyz
+    - music.zerotier.gwg313.xyz

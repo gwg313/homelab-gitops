@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: forgejo-cert
+  namespace: istio-system
+spec:
+  secretName: forgejo-cert
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  dnsNames:
+    - git.local.gwg313.xyz
+    - git.gwg313.xyz
+    - git.zerotier.gwg313.xyz

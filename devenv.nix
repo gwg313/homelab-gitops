@@ -4,19 +4,23 @@
   config,
   inputs,
   ...
-}:
-
-{
+}: {
   # https://devenv.sh/basics/
   env.GREET = "devenv";
   env = {
-    CONTROL_PLANE_IP = "192.168.10.10";
-    WORKER_1_IP = "192.168.10.11";
-    WORKER_2_IP = "192.168.10.12";
   };
 
   # https://devenv.sh/packages/
-  packages = with pkgs; [ talosctl ];
+  packages = with pkgs; [
+    kubectl
+    talosctl
+    kubeseal
+    kubeconform
+    yamllint
+    shellcheck
+    gitleaks
+    yamlfmt
+  ];
 
   # https://devenv.sh/languages/
   # languages.rust.enable = true;
@@ -50,6 +54,42 @@
   '';
 
   # https://devenv.sh/pre-commit-hooks/
+  # git-hooks.hooks = {
+  #   check-yaml.enable = true;
+  #   end-of-file-fixer.enable = true;
+  #   trim-trailing-whitespace.enable = true;
+  #   yamlfmt = {
+  #     enable = true;
+  #     entry = "yamlfmt";
+  #     args = ["-in-place"];
+  #     files = "\\.ya?ml$";
+  #     language = "system";
+  #   };
+  #   yamllint.enable = true;
+  #   shellcheck.enable = true;
+  #
+  #   kubeconform = {
+  #     enable = true;
+  #     entry = "kubeconform";
+  #     args = [
+  #       "-strict"
+  #       "-summary"
+  #       "-ignore-missing-schemas"
+  #       "-schema-location"
+  #       "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{.ResourceKind}}-{{.ResourceAPIVersion}}.json"
+  #       "-schema-location"
+  #       "default"
+  #     ];
+  #     files = "\\.ya?ml$";
+  #   };
+  #
+  #   gitleaks = {
+  #     enable = true;
+  #     entry = "gitleaks detect --no-git -v --redact";
+  #     language = "system";
+  #     pass_filenames = false;
+  #   };
+  # };
   # pre-commit.hooks.shellcheck.enable = true;
 
   # See full reference at https://devenv.sh/reference/options/

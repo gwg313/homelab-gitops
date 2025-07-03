@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: navidrome
+spec:
+  hosts:
+    - music.local.gwg313.xyz
+    - music.gwg313.xyz
+    - music.zerotier.gwg313.xyz
+  gateways:
+    - music-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: navidrome
+            port:
+              number: 80

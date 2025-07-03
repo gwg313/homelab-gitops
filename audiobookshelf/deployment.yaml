@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiobookshelf
+  namespace: audiobookshelf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audiobookshelf
+  template:
+    metadata:
+      labels:
+        app: audiobookshelf
+    spec:
+      containers:
+        - name: audiobookshelf
+          image: registry.gwg313.xyz/library/audiobookshelf:latest
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: audiobooks-volume
+              mountPath: /audiobooks
+            - name: podcasts-volume
+              mountPath: /podcasts
+            - name: config-volume
+              mountPath: /config
+            - name: metadata-volume
+              mountPath: /metadata
+      volumes:
+        - name: audiobooks-volume
+          persistentVolumeClaim:
+            claimName: audiobookshelf-audiobooks
+        - name: podcasts-volume
+          persistentVolumeClaim:
+            claimName: audiobookshelf-podcasts
+        - name: config-volume
+          persistentVolumeClaim:
+            claimName: audiobookshelf-config
+        - name: metadata-volume
+          persistentVolumeClaim:
+            claimName: audiobookshelf-metadata

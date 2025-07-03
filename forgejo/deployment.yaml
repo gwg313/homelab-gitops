@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+  namespace: forgejo
+  labels:
+    app: forgejo
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo
+  template:
+    metadata:
+      labels:
+        app: forgejo
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: forgejo
+          image: codeberg.org/forgejo/forgejo:11-rootless
+          ports:
+            - containerPort: 3000
+            - containerPort: 2222
+          env:
+            - name: FORGEJO__server__ROOT_URL
+              value: "https://git.gwg313.xyz/"
+            - name: FORGEJO__ssh__START_SSH_SERVER
+              value: "false"
+            - name: FORGEJO__webhook__ALLOWED_HOST_LIST
+              value: "ci.gwg313.xyz"
+          volumeMounts:
+            - name: forgejo-volume
+              mountPath: /var/lib/gitea
+              subPath: data
+            - name: forgejo-volume
+              mountPath: /etc/gitea
+              subPath: config
+      volumes:
+        - name: forgejo-volume
+          persistentVolumeClaim:
+            claimName: forgejo-pvc

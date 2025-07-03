@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: yopass-gateway
+  namespace: yopass
+spec:
+  selector:
+    istio: gateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: yopass-cert
+      hosts:
+        - pastebin.gwg313.xyz
+        - pastebin.local.gwg313.xyz
