@@ -38,5 +38,5 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: manual
   nfs:
-    path: /mnt/tank/music-ro
+    path: /mnt/tank/media/music
     server: truenas.local.gwg313.xyz
