@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: audiobookshelf
-          image: registry.gwg313.xyz/library/audiobookshelf:latest
+          image: registry.gwg313.xyz/library/audiobookshelf-rootless:latest
           ports:
             - containerPort: 8080
           volumeMounts:
