@@ -8,6 +8,5 @@ spec:
   issuerRef:
     name: letsencrypt-dns
     kind: ClusterIssuer
-  commonName: bytestash.local.gwg313.xyz
   dnsNames:
-    - bytestash.local.gwg313.xyz
+    - snippets.gwg313.xyz

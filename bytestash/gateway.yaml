@@ -12,7 +12,7 @@ spec:
         name: https
         protocol: HTTPS
       hosts:
-        - "bytestash.local.gwg313.xyz"
+        - "snippets.gwg313.xyz"
       tls:
         mode: SIMPLE
         credentialName: bytestash-cert

@@ -5,7 +5,7 @@ metadata:
   namespace: bytestash
 spec:
   hosts:
-    - "bytestash.local.gwg313.xyz"
+    - "snippets.gwg313.xyz"
   gateways:
     - bytestash/bytestash-gateway
   http:

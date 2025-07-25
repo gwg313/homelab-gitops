@@ -11,7 +11,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: manual
   nfs:
-    path: /mnt/tank/docker-volumes/bytestash
+    path: /mnt/tank/k8s/bytestash
     server: truenas.local.gwg313.xyz
 ---
 apiVersion: v1
