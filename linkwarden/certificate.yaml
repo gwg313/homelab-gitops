@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: linkwarden-cert
+  namespace: istio-system
+spec:
+  secretName: linkwarden-cert
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  dnsNames:
+    - bookmarks.gwg313.xyz

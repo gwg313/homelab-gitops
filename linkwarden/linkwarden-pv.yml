@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: linkwarden-data-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz:3260
+    iqn: iqn.2005-10.org.freenas.ctl:linkwarden-data
+    lun: 0
+    fsType: ext4
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: linkwarden-iscsi-auth
+  claimRef:
+    namespace: linkwarden
+    name: linkwarden-data-pvc

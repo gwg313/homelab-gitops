@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: linkwarden
+  namespace: linkwarden
+spec:
+  hosts:
+    - bookmarks.gwg313.xyz
+  gateways:
+    - linkwarden-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: linkwarden
+            port:
+              number: 80

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: linkwarden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      securityContext:
+        fsGroup: 999 # PostgreSQL's default GID (postgres group)
+      containers:
+        - name: postgres
+          image: bitnami/postgresql:latest
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret-linkwarden
+                  key: POSTGRESQL_PASSWORD
+            - name: POSTGRESQL_PERFORM_RESTORE
+              value: "true"
+          envFrom:
+            - configMapRef:
+                name: postgresql-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-storage
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: linkwarden-postgres-pvc
+      securityContext:
+        runAsUser: 999 # Ensure the container runs as the 'postgres' user (UID 999)
+        fsGroup: 999 # Ensure the filesystem group is 'postgres' (GID 999)
