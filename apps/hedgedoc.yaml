@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hedgedoc
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/gwg313/homelab-gitops
+    targetRevision: main
+    path: hedgedoc
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hedgedoc
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

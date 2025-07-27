@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hedgedoc-frontend
+  namespace: hedgedoc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hedgedoc-frontend
+  template:
+    metadata:
+      labels:
+        app: hedgedoc-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/hedgedoc/hedgedoc/frontend:develop
+          env:
+            - name: HD_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: hedgedoc-config
+                  key: HD_BASE_URL

@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hedgedoc-backend
+  namespace: hedgedoc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hedgedoc-backend
+  template:
+    metadata:
+      labels:
+        app: hedgedoc-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/hedgedoc/hedgedoc/backend:develop
+          env:
+            - name: HD_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: hedgedoc-config
+                  key: HD_BASE_URL
+
+
+            - name: HD_AUTH_LOCAL_ENABLE_LOGIN
+              value: "true"
+            - name: HD_AUTH_LOCAL_ENABLE_REGISTER
+              value: "true"
+            - name: HD_MEDIA_BACKEND
+              value: "filesystem"
+            - name: HD_MEDIA_BACKEND_FILESYSTEM_UPLOAD_PATH
+              value: "/usr/src/app/backend/uploads"
+            - name: HD_DATABASE_TYPE
+              value: "postgres"
+            - name: HD_DATABASE_HOST
+              value: hedgedoc-db
+            - name: HD_DATABASE_PORT
+              value: "5432"
+            - name: HD_DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hedgedoc-secret
+                  key: POSTGRESQL_DATABASE
+            - name: HD_DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: hedgedoc-secret
+                  key: POSTGRESQL_USERNAME
+            - name: HD_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hedgedoc-secret
+                  key: POSTGRESQL_PASSWORD
+            - name: HD_SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: hedgedoc-secret
+                  key: HD_SESSION_SECRET
+
+          volumeMounts:
+            - name: uploads
+              mountPath: /usr/src/app/backend/uploads
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: hedgedoc-uploads-pvc

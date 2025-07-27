@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hedgedoc-config
+  namespace: hedgedoc
+data:
+  HD_BASE_URL: https://hdoc.gwg313.xyz
