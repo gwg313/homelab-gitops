@@ -24,14 +24,20 @@ spec:
                 secretKeyRef:
                   name: postgresql-secret-linkwarden
                   key: POSTGRESQL_PASSWORD
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextauth-secret
+                  key: NEXTAUTH_SECRET
             - name: DATABASE_URL
               value: "postgres://postgres:$(POSTGRES_PASSWORD)@postgres:5432/postgres"
-            - name: NEXTAUTH_SECRET
-              value: SgG4jVtm9ukRKEbJw7vw
             - name: NEXTAUTH_URL
               value: "https://bookmarks.gwg313.xyz/api/v1/auth"
+
+            - name: NEXTAUTH_URL_INTERNAL
+              value: "http://localhost:3000"
             - name: NEXT_PUBLIC_DISABLE_REGISTRATION
-              value: "true"
+              value: "false"
           volumeMounts:
             - mountPath: /data/data
               name: linkwarden-data
