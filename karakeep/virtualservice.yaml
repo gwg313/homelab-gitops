@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: karakeep
+  namespace: karakeep
+spec:
+  hosts:
+    - bookmarks.gwg313.xyz
+  gateways:
+    - karakeep-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: karakeep-web
+            port:
+              number: 80

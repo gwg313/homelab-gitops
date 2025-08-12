@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: linkwarden
+  name: karakeep
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/gwg313/homelab-gitops
     targetRevision: main
-    path: linkwarden
+    path: karakeep
   destination:
     server: https://kubernetes.default.svc
-    namespace: linkwarden
+    namespace: karakeep
   syncPolicy:
     automated:
       selfHeal: true
