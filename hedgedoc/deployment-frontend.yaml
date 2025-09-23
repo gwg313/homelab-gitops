@@ -16,6 +16,7 @@ spec:
       containers:
         - name: frontend
           image: ghcr.io/hedgedoc/hedgedoc/frontend:develop
+          imagePullPolicy: Always
           env:
             - name: HD_BASE_URL
               valueFrom:
