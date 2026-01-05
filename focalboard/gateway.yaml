@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: focalboard-gateway
+  namespace: focalboard
+spec:
+  selector:
+    istio: gateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: focalboard-cert
+      hosts:
+        - pm.local.gwg313.xyz
+        - pm.gwg313.xyz
+        - pm.zerotier.gwg313.xyz

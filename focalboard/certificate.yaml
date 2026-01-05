@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: focalboard-cert
+  namespace: istio-system
+spec:
+  secretName: focalboard-cert
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  dnsNames:
+    - pm.local.gwg313.xyz
+    - pm.gwg313.xyz
+    - pm.zerotier.gwg313.xyz

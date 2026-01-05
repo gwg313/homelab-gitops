@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: focalboard-config
+  namespace: focalboard
+data:
+  config.json: |
+    {
+      "serverRoot": "https://pm.gwg313.xyz",
+      "port": 8000,
+
+      "dbtype": "sqlite3",
+      "dbconfig": "/opt/focalboard/data/focalboard.db",
+
+      "useSSL": false,
+      "webpath": "./pack",
+      "filespath": "/data/files",
+
+      "telemetry": false,
+      "prometheusaddress": ":9092",
+
+      "session_expire_time": 2592000,
+      "session_refresh_time": 18000,
+
+      "localOnly": false,
+      "enableLocalMode": false
+    }
