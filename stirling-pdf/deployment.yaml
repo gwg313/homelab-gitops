@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stirling-pdf
+  namespace: stirling-pdf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stirling-pdf
+  template:
+    metadata:
+      labels:
+        app: stirling-pdf
+    spec:
+      containers:
+        - name: stirling-pdf
+          image: docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DISABLE_ADDITIONAL_FEATURES
+              value: "false"
+            - name: LANGS
+              value: "en_US"
+          volumeMounts:
+            - name: training-data
+              mountPath: /usr/share/tessdata
+            - name: extra-configs
+              mountPath: /configs
+            - name: custom-files
+              mountPath: /customFiles
+            - name: logs
+              mountPath: /logs
+            - name: pipeline
+              mountPath: /pipeline
+      volumes:
+        - name: training-data
+          persistentVolumeClaim:
+            claimName: stirling-training-data
+        - name: extra-configs
+          persistentVolumeClaim:
+            claimName: stirling-extra-configs
+        - name: custom-files
+          persistentVolumeClaim:
+            claimName: stirling-custom-files
+        - name: logs
+          persistentVolumeClaim:
+            claimName: stirling-logs
+        - name: pipeline
+          persistentVolumeClaim:
+            claimName: stirling-pipeline
