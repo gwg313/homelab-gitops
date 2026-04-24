@@ -7,7 +7,7 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
-  storageClassName: ""
+  storageClassName: "iscsi-manual"
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Filesystem
   iscsi:
@@ -21,6 +21,9 @@ spec:
     secretRef:
       name: woodpecker-iscsi-auth
       namespace: woodpecker
+  claimRef:
+    name: woodpecker-agent-pvc5
+    namespace: woodpecker
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -30,7 +33,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ""
+  storageClassName: "iscsi-manual"
   volumeName: woodpecker-agent-pv5
   resources:
     requests:
@@ -45,7 +48,7 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteOnce
-  storageClassName: ""
+  storageClassName: "iscsi-manual"
   persistentVolumeReclaimPolicy: Retain
   volumeMode: Filesystem
   iscsi:
@@ -59,6 +62,9 @@ spec:
     secretRef:
       name: woodpecker-iscsi-auth
       namespace: woodpecker
+  claimRef:
+    name: woodpecker-server-pvc5
+    namespace: woodpecker
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -68,7 +74,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ""
+  storageClassName: "iscsi-manual"
   volumeName: woodpecker-server-pv5
   resources:
     requests:
@@ -84,7 +90,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
-  storageClassName: ""
+  storageClassName: "iscsi-manual"
   persistentVolumeReclaimPolicy: Retain
   iscsi:
     targetPortal: truenas.local.gwg313.xyz
@@ -97,6 +103,9 @@ spec:
     secretRef:
       name: woodpecker-iscsi-auth
       namespace: woodpecker
+  claimRef:
+    name: data-woodpecker-server-0
+    namespace: woodpecker
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -107,8 +116,8 @@ spec:
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
+  storageClassName: "iscsi-manual"
+  volumeName: data-woodpecker-server-0
   resources:
     requests:
       storage: 10Gi
-  volumeName: data-woodpecker-server-0
-  storageClassName: "" # must match PV
