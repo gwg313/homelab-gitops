@@ -12,28 +12,28 @@ spec:
     chart: istiod
     targetRevision: 1.26.0
     helm:
-      values: |
-        global:
-          istioCNI:
-            enabled: true
+          values: |
+            cni:
+              enabled: true
+              provider: default
+              
+            sidecarInjectorWebhook:
+              disableInitContainers: true 
 
-        sidecarInjectorWebhook:
-          disableInitContainers: true
+            pilot:
+              autoscaleEnabled: false
+              replicaCount: 2
+              resources:
+                requests:
+                  cpu: "500m"
+                  memory: "512Mi"
+                limits:
+                  cpu: "1000m"
+                  memory: "1Gi"
 
-        pilot:
-          autoscaleEnabled: false
-          replicaCount: 2
-          resources:
-            requests:
-              cpu: "500m"
-              memory: "512Mi"
-            limits:
-              cpu: "1000m"
-              memory: "1Gi"
-
-          podDisruptionBudget:
-            enabled: true
-            minAvailable: 1
+              podDisruptionBudget:
+                enabled: true
+                minAvailable: 1
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
