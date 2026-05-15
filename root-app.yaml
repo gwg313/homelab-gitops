@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/gwg313/homelab-gitops
     targetRevision: main
-    path: apps
+    path: apps_temp
     directory:
       recurse: true
   destination:
