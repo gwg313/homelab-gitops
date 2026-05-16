@@ -1,30 +1,31 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: forgejo
-  namespace: forgejo
+  name: navidrome
+  namespace: navidrome
 spec:
   parentRefs:
     - name: shared-edge-gateway
       namespace: cilium-ingress
+
   hostnames:
-    - git.local.gwg313.xyz
-    - git.gwg313.xyz
-    - git.zerotier.gwg313.xyz
+    - "music.local.gwg313.xyz"
+    - "music.gwg313.xyz"
+    - "music.zerotier.gwg313.xyz"
   rules:
     - matches:
         - path:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: forgejo
+        - name: navidrome
           port: 80
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
-  name: allow-gateway-to-forgejo
-  namespace: forgejo
+  name: allow-gateway-to-navidrome
+  namespace: navidrome
 spec:
   from:
     - group: gateway.networking.k8s.io
@@ -33,4 +34,4 @@ spec:
   to:
     - group: ""
       kind: Service
-      name: forgejo
+      name: navidrome
