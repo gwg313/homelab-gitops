@@ -1,0 +1,17 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress-to-forgejo
+  namespace: forgejo
+spec:
+  description: "Accept incoming traffic from the native mesh proxy"
+  endpointSelector:
+    matchLabels:
+      app: forgejo
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
