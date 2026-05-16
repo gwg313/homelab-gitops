@@ -1,0 +1,36 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  parentRefs:
+    - name: shared-edge-gateway
+      namespace: cilium-ingress
+  hostnames:
+    - git.local.gwg313.xyz
+    - git.gwg313.xyz
+    - git.zerotier.gwg313.xyz
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: forgejo
+          port: 80 # 👈 Flattened directly to an integer, matching the Gateway API spec
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-gateway-to-forgejo
+  namespace: forgejo
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: cilium-ingress
+  to:
+    - group: ""
+      kind: Service
+      name: forgejo
