@@ -16,6 +16,6 @@ spec:
             prefix: /
       route:
         - destination:
-            host: forgejo
+            host: forgejo.forgejo.svc.cluster.local
             port:
               number: 80

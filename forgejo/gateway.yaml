@@ -5,7 +5,7 @@ metadata:
   namespace: forgejo
 spec:
   selector:
-    istio: gateway
+    app: istio-ingressgateway
   servers:
     - port:
         number: 443
