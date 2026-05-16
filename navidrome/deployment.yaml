@@ -5,6 +5,8 @@ metadata:
   namespace: navidrome
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: navidrome
@@ -15,9 +17,16 @@ spec:
     spec:
       containers:
         - name: navidrome
-          image: deluan/navidrome:latest
+          image: deluan/navidrome:pr-5495
           ports:
             - containerPort: 4533
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
           envFrom:
             - configMapRef:
                 name: navidrome-config

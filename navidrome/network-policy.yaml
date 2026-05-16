@@ -5,7 +5,7 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: default-deny
-  namespace: forgejo
+  namespace: navidrome
 spec:
   endpointSelector: {}
   ingress: []
@@ -19,33 +19,33 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: allow-ingress
-  namespace: forgejo
+  namespace: navidrome
 spec:
   endpointSelector:
     matchLabels:
-      app: forgejo
+      app: navidrome
 
   ingress:
     - fromEntities:
         - ingress
       toPorts:
         - ports:
-            - port: "3000"
+            - port: "4533"
               protocol: TCP
 
 ---
 # ----------------------------------------------------
-# DNS (cluster DNS only)
+# DNS (required)
 # ----------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: allow-dns
-  namespace: forgejo
+  namespace: navidrome
 spec:
   endpointSelector:
     matchLabels:
-      app: forgejo
+      app: navidrome
   egress:
     - toEndpoints:
         - matchLabels:
@@ -59,50 +59,45 @@ spec:
             dns:
               - matchPattern: "*"
 
-# ---
-# # ----------------------------------------------------
-# # CI runner access (in-cluster service)
-# # ----------------------------------------------------
-# apiVersion: cilium.io/v2
-# kind: CiliumNetworkPolicy
-# metadata:
-#   name: allow-ci-runner
-#   namespace: forgejo
-# spec:
-#   endpointSelector:
-#     matchLabels:
-#       app: forgejo
-#
-#   egress:
-#     - toEndpoints:
-#         - matchLabels:
-#             app: ci-runner   # adjust to your runner labels
-#       toPorts:
-#         - ports:
-#             - port: "80"
-#               protocol: TCP
-#             - port: "443"
-#               protocol: TCP
-#
 ---
 # ----------------------------------------------------
-# External git providers (FQDN restricted)
+# Spotify API access (album art, metadata)
 # ----------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: allow-git-egress
-  namespace: forgejo
+  name: allow-spotify
+  namespace: navidrome
 spec:
   endpointSelector:
     matchLabels:
-      app: forgejo
+      app: navidrome
 
   egress:
     - toFQDNs:
-        - matchName: github.com
-        - matchName: api.github.com
-        - matchName: raw.githubusercontent.com
+        - matchName: api.spotify.com
+        - matchName: i.scdn.co
+        - matchName: accounts.spotify.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+---
+
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-navidrome
+  namespace: navidrome
+spec:
+  endpointSelector:
+    matchLabels:
+      app: navidrome
+
+  egress:
+    - toFQDNs:
+        - matchPattern: "*.navidrome.org"
+        - matchName: navidrome.org
       toPorts:
         - ports:
             - port: "443"
@@ -110,18 +105,40 @@ spec:
 
 ---
 # ----------------------------------------------------
-# OPTIONAL: unrestricted egress (disabled by default)
-# Enable ONLY when required for troubleshooting or apps
+# Last.fm API access (metadata, scrobbling, images)
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-lastfm
+  namespace: navidrome
+spec:
+  endpointSelector:
+    matchLabels:
+      app: navidrome
+
+  egress:
+    - toFQDNs:
+        - matchName: ws.audioscrobbler.com
+        - matchName: lastfm.freetls.fastly.net
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+
+---
+# ----------------------------------------------------
+# OPTIONAL: unrestricted HTTPS egress (disabled)
 # ----------------------------------------------------
 # apiVersion: cilium.io/v2
 # kind: CiliumNetworkPolicy
 # metadata:
 #   name: allow-all-egress
-#   namespace: forgejo
+#   namespace: navidrome
 # spec:
 #   endpointSelector:
 #     matchLabels:
-#       app: forgejo
+#       app: navidrome
 #
 #   egress:
 #     - toEntities:
@@ -129,6 +146,4 @@ spec:
 #       toPorts:
 #         - ports:
 #             - port: "443"
-#               protocol: TCP
-#             - port: "80"
 #               protocol: TCP

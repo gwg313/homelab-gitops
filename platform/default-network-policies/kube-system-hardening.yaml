@@ -1,0 +1,40 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: kube-system-hardening
+  namespace: kube-system
+spec:
+  endpointSelector: {}
+
+  ingress:
+    # Allow cluster-internal communication (required for DNS, CNI, etc.)
+    - fromEntities:
+        - cluster
+        - host
+        - remote-node
+
+    # Allow kube-apiserver to talk to system components
+    - fromEntities:
+        - kube-apiserver
+
+  egress:
+    # Core dependency: Kubernetes API
+    - toEntities:
+        - kube-apiserver
+
+    # CoreDNS access
+    - toEndpoints:
+        - matchLabels:
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+
+    # Allow internal cluster communication (important for CNI + service mesh)
+    - toEntities:
+        - cluster
+        - host
+        - remote-node

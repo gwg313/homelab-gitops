@@ -1,0 +1,30 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: kube-system-restrict-external-egress
+  namespace: kube-system
+spec:
+  endpointSelector: {}
+
+  egress:
+    # Allow Kubernetes API
+    - toEntities:
+        - kube-apiserver
+
+    # Allow internal cluster communication
+    - toEntities:
+        - cluster
+        - host
+        - remote-node
+
+    # Allow DNS
+    - toEndpoints:
+        - matchLabels:
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+
