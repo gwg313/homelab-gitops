@@ -1,0 +1,77 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-port-forward
+  namespace: kube-system
+spec:
+  description: "Allow host-level port-forwarding to Hubble Relay and UI"
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.policy.serviceaccount: hubble-relay 
+  ingress:
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "4245"
+              protocol: TCP
+            - port: "8081"
+              protocol: TCP
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-ui-to-relay
+  namespace: kube-system
+spec:
+  description: "Allow Hubble UI to fetch data from Hubble Relay"
+  endpointSelector:
+    matchLabels:
+      k8s-app: hubble-relay
+  ingress:
+    - fromEndpoints:
+      - matchLabels:
+          k8s-app: hubble-ui
+      toPorts:
+        - ports:
+            - port: "4245"
+              protocol: TCP
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-relay-to-agents
+  namespace: kube-system
+spec:
+  description: "Allow Hubble Relay to collect flows from Cilium node agents"
+  endpointSelector:
+    matchLabels:
+      k8s-app: hubble-relay
+  egress:
+    - toEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "4244"
+              protocol: TCP
+---
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-hubble-ui-egress-to-relay
+  namespace: kube-system
+spec:
+  description: "Allow Hubble UI to send requests to Hubble Relay"
+  endpointSelector:
+    matchLabels:
+      k8s-app: hubble-ui
+  egress:
+    - toEndpoints:
+      - matchLabels:
+          k8s-app: hubble-relay
+      toPorts:
+        - ports:
+            - port: "4245"
+              protocol: TCP
