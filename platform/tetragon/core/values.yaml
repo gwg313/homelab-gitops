@@ -1,0 +1,13 @@
+tetragon:
+  enabled: true
+  
+  export:
+    enabled: true
+
+  # --- TALOS OS KERNEL MOUNT TUNING ---
+  btf: /sys/kernel/btf/vmlinux
+
+  bpf:
+    mountPath: /sys/fs/bpf
+  hostNetwork: true
+  hostPID: true

@@ -1,0 +1,7 @@
+kyverno:
+  admissionController:
+    replicas: 2
+    features:
+      loggingFormat: text
+    telemetry:
+      enabled: false

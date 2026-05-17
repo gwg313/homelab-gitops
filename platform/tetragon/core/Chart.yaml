@@ -1,0 +1,10 @@
+apiVersion: v2
+name: tetragon
+description: Setup Tetrgon
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+dependencies:
+  - name: tetragon
+    repository: https://helm.cilium.io
+    version: 1.7.0

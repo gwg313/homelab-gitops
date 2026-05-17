@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kyverno-core
+description: Kyverno Helm
+type: application
+version: 1.0.0
+appVersion: 1.0.0
+dependencies:
+  - name: kyverno
+    repository: https://kyverno.github.io/kyverno
+    version: 3.8.0
