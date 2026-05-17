@@ -6,5 +6,6 @@ resources:
   - kyverno-policies.yaml
   - tetragon-core.yaml
   - tetragon-policies.yaml
+  - sealed-secrets.yaml
   - forgejo.yaml
   - navidrome.yaml
