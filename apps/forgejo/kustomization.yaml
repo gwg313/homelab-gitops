@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - storage.yaml
+  - forgejo-iscsi-auth.sealed.yaml
+  - secrets-sealed.yaml
+  - network-policy.yaml
+  - deployment.yaml
+  - service.yaml
+  - route.yaml
