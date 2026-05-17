@@ -7,4 +7,4 @@ resources:
   - tetragon-core.yaml
   - tetragon-policies.yaml
   - forgejo.yaml
-
+  - navidrome.yaml
