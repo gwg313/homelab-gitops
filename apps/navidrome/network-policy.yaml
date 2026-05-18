@@ -1,18 +1,4 @@
 # ----------------------------------------------------
-# Default deny (namespace baseline)
-# ----------------------------------------------------
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: default-deny
-  namespace: navidrome
-spec:
-  endpointSelector: {}
-  ingress: []
-  egress: []
-
----
-# ----------------------------------------------------
 # Ingress only from Gateway API
 # ----------------------------------------------------
 apiVersion: cilium.io/v2
@@ -32,32 +18,6 @@ spec:
         - ports:
             - port: "4533"
               protocol: TCP
-
----
-# ----------------------------------------------------
-# DNS (required)
-# ----------------------------------------------------
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: allow-dns
-  namespace: navidrome
-spec:
-  endpointSelector:
-    matchLabels:
-      app: navidrome
-  egress:
-    - toEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: kube-system
-            k8s-app: kube-dns
-      toPorts:
-        - ports:
-            - port: "53"
-              protocol: ANY
-          rules:
-            dns:
-              - matchPattern: "*"
 
 ---
 # ----------------------------------------------------
