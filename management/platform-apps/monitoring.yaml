@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kyverno-policies
+  name: monitoring
   namespace: argocd
   annotations:
     argoproj.io/sync-wave: "-5"
@@ -10,15 +10,14 @@ spec:
   source:
     repoURL: https://github.com/gwg313/homelab-gitops.git
     targetRevision: main
-    path: platform/kyverno/policies
+    path: platform/monitoring
   destination:
     server: https://kubernetes.default.svc
-    namespace: kyverno
+    namespace: monitoring
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=false
+      - CreateNamespace=true
       - ServerSideApply=true
-      - Replace=true # <-- Policies have immutable fields so this helps deal with updates

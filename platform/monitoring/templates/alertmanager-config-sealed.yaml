@@ -1,0 +1,18 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: alertmanager-custom-config
+  namespace: monitoring
+
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  encryptedData:
+    alertmanager.yaml: AgAkK7qOn8qBcmFGRsbCRh4+UM3s4vn0oQggZNXJe2nlMLzTOu25hbRbCYJNV7C+pRfZmMyoD+Ixh69VJMRee3N0deuMYMgxTrqFhn0uUkUWNqjPU+s3PiCT3Dueu+1bxgUy4yjvRoZuAyouxSbOH9TjrfUnZFOzNc+au/FXekUZDpliV5qs6vUILLyNV5LpHP2ueZ0GPOMAyZk+jdsvi3wN9Ap/Rd5QjZOYKW+f0QVkoPvDjpiLrPUioXnRIvLaoVeukXVDMYaYMiwRoz5nKvFF8xgKSATPX4Be9qGWofBHiAhOAAqpzuyeGTbw7NRFeRQ3iVHe/A1N32GxSe3MDnOkdrytIxMMMxRH2h+iQgmkmUgPYt506AYyYBHtEsy+KmL0q03Ieywk5i9OLJ99kCRW/ybTNYWwuAppfVeXL/eW6WPVE+zFly+WOnNIKEha6O8YKwCbp1FEdxTefI9l9OP7uqypYc020W5W+GNpoOs4GWCnLTqCnAt0JhcPurFkfvzLH8F9TKM5vbzkwL4s3TLK1ELjWJ9fNhfU3/RIM2Kj9DifaLohYvyShaWpr22C3LE9970O8vt/Mc0pmI/Tth0tXmCbfaUJ/7UYktJPnCllVY9GSJbXrGVI3ed7rhmttuXvcezVuZWlG2C4Sr+HyXJnygg79S/l3kbU0R9U40OROAxS1PkNWuScep5ab+KUU6LojAVN39OkSLcJs7oW8QNr+/Qwx3nXDHFfFLVCHHbU9WfVwISTNzffGJvRLSuRuR6sU4rjDQN1pCSeVRN/Xajw+UI5I7bOJdmSPrUgKjw8UnSBDWqScb4tNLWobGKsN1u26o4uTKQGXnO9+L+UDib4QrXp/P5NqfvVfEbKiHPz8U7l5vPITEfi3y36bD0khp33UZTIswp+t8EtexepfqC81+s2ynJFTEDhdxGl2fW+g+dcDcyk+pO0aueYiHX29QXnLYMy4Ni3IWXnP8FsK+/AYt8wERhXhAribXdPuQBG4X2OPdYVqOCQeMczSLTO8ZAP2GbnJIca88tJVc/1OFk4y/4Ek7z4ftqm9k6cGWgzlk01hqsua4+TLj5TuBFCXqVTfEKoKU/rBpm2zu2LdePijAZRGU9nmvLMdvyHd4zO7NxggWdUIomR8poyPavZamyz1f7hjCGOeGz936zS1/vOwjxynr9Hc8VIWwgfqZkK7HhHxG8YwKx+5lKDLZnr8rzDh3QgS4VBCY3tDzFe6Y9KmkJULnd7iSbfEaurhbJE8SJ2x23VVQWwAI6Tnqk7rSO/031lVSYMKSYpArFmRHz1aBsPbgZTiz3++o/lTsbRB3GPaYx2jgdqkRqG4OOJmF00DrMw9F/NOMctzZBeSsp4HH2SPoowf+g/KK575X6LwlkX2ymqxP44H1dwxe4y/4xXapLDKByHpluEy1Rd+TI+Y5VUfjs7LlWBCN8L/WaA/bt/jk6MnpJe2GvBwpIkdH/lCcekFjq/Q4beIqiRZgzMXnBhGSzdmGeAX+vja8bbX+81wRCi/nJT2aHA1DIS4Rj0Uz1C7JucGlG6Gh5C1A==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: alertmanager-custom-config
+      namespace: monitoring

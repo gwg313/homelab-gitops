@@ -29,6 +29,7 @@ spec:
                 - cert-manager
                 - sealed-secrets
                 - nfs-subdir-external-provisioner
+                - monitoring
       generate:
         apiVersion: cilium.io/v2
         kind: CiliumNetworkPolicy

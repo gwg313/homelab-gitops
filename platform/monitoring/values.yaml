@@ -1,0 +1,17 @@
+kube-prometheus-stack:
+  grafana:
+    defaultDashboardsTimezone: browser
+    grafana.ini:
+      date_formats:
+        default_timezone: browser
+    admin:
+      existingSecret: kube-prometheus-stack-grafana
+      userKey: admin-user
+      passwordKey: admin-password
+
+  alertmanager:
+    enabled: true
+    
+    alertmanagerSpec:
+      useExistingSecret: true
+      configSecret: alertmanager-custom-config

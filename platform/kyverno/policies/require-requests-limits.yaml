@@ -33,6 +33,7 @@ spec:
                 - cert-manager
                 - sealed-secrets
                 - nfs-subdir-external-provisioner
+                - monitoring
       validate:
         message: "Resource discipline violation: Containers must declare cpu/memory requests and limits."
         pattern:
