@@ -1,0 +1,37 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: block-tmp-execution
+  namespace: kube-system
+spec:
+  podSelector:
+    matchExpressions:
+      - key: "io.kubernetes.pod.namespace"
+        operator: "NotIn"
+        values:
+          - kube-system
+          - kube-public
+          - kube-node-lease
+          - argocd
+          - kyverno
+          - cilium-ingress
+          - cilium-secrets
+          - cert-manager
+          - sealed-secrets
+          - nfs-subdir-external-provisioner
+  kprobes:
+    - call: "sys_execve"
+      syscall: true
+      args:
+        - index: 0
+          type: "string"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values:
+                - "/tmp/"
+                - "/var/tmp/"
+                - "/dev/shm/"
+          matchActions:
+            - action: Sigkill

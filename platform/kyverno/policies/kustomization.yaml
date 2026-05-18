@@ -7,3 +7,4 @@ resources:
   - disallow-latest-tag.yaml
   - kyverno-cilium-rbac.yaml
   - generate-ns-network-baseline.yaml
+  - require-requests-limits.yaml

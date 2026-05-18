@@ -1,0 +1,48 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-requests-limits
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    policies.kyverno.io/title: Enforce Resource Requests and Limits
+    policies.kyverno.io/description: >-
+      Guarantees cluster stability by requiring all application containers 
+      to explicitly declare CPU and Memory requests and limits.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: validate-resources
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - default
+                - kube-system
+                - kube-public
+                - kube-node-lease
+                - argocd
+                - kyverno
+                - cilium-ingress
+                - cilium-secrets
+                - cert-manager
+                - sealed-secrets
+                - nfs-subdir-external-provisioner
+      validate:
+        message: "Resource discipline violation: Containers must declare cpu/memory requests and limits."
+        pattern:
+          spec:
+            containers:
+              - name: "*"
+                resources:
+                  requests:
+                    cpu: "?*"    # Must not be empty
+                    memory: "?*" # Must not be empty
+                  limits:
+                    cpu: "?*"    # Must not be empty
+                    memory: "?*" # Must not be empty
