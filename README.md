@@ -1,5 +1,6 @@
 # Homelab Kubernetes – GitOps Repository
 
+**Currently in process of major overhaul, so things may be a bit messy for a few days**
 This repository contains the Kubernetes manifests and Helm configurations used to operate my self-hosted infrastructure.
 
 The cluster runs on **Talos OS** and is fully managed using **ArgoCD** with the App-of-Apps pattern.
