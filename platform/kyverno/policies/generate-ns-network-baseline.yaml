@@ -30,6 +30,8 @@ spec:
                 - sealed-secrets
                 - nfs-subdir-external-provisioner
                 - monitoring
+                - tekton-pipelines-resolvers
+                - tekton-pipelines
       generate:
         apiVersion: cilium.io/v2
         kind: CiliumNetworkPolicy

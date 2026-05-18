@@ -12,6 +12,17 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchExpressions:
+                  - key: app.kubernetes.io/managed-by
+                    operator: In
+                    values:
+                      - tekton-pipelines
+                  - key: tekton.dev/task
+                    operator: Exists
       validate:
         message: "Using the 'latest' tag or omitting image tags is forbidden. Use a specific version semantic tag."
         foreach:

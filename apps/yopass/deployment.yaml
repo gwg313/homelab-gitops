@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: yopass
-          image: jhaals/yopass
+          image: jhaals/yopass:13.1.0
           args:
             - "--memcached=localhost:11211"
           ports:
@@ -28,7 +28,7 @@ spec:
               cpu: 100m
               memory: 50Mi
         - name: yopass-memcached
-          image: memcached
+          image: memcached:trixie
           resources:
             limits:
               cpu: 100m

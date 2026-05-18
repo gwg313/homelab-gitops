@@ -34,6 +34,8 @@ spec:
                 - sealed-secrets
                 - nfs-subdir-external-provisioner
                 - monitoring
+                - tekton-pipelines-resolvers
+                - tekton-pipelines
       validate:
         message: "Resource discipline violation: Containers must declare cpu/memory requests and limits."
         pattern:

@@ -1,0 +1,17 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: yopass
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: yopass
+
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "1337"
+              protocol: TCP

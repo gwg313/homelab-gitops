@@ -1,0 +1,41 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: woodpecker
+  namespace: woodpecker
+spec:
+  parentRefs:
+    - name: shared-edge-gateway
+      namespace: cilium-ingress
+
+  hostnames:
+    - ci.local.gwg313.xyz
+    - ci.gwg313.xyz
+    - ci.zerotier.gwg313.xyz
+
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: woodpecker-server
+          port: 80
+
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-gateway-to-woodpecker
+  namespace: woodpecker
+
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: cilium-ingress
+
+  to:
+    - group: ""
+      kind: Service
+      name: woodpecker-server
