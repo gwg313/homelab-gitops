@@ -1,0 +1,54 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-ns-network-baseline
+  annotations:
+    policies.kyverno.io/title: Inject Namespace Baseline CNP
+    policies.kyverno.io/description: Automatically provisions a local default-deny + DNS egress CNP inside new application namespaces.
+spec:
+  background: true
+  rules:
+    - name: inject-local-cnp
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - default
+                - kube-system
+                - kube-public
+                - kube-node-lease
+                - argocd
+                - kyverno
+                - cilium-ingress
+                - cilium-secrets
+                - cert-manager
+                - sealed-secrets
+                - nfs-subdir-external-provisioner
+      generate:
+        apiVersion: cilium.io/v2
+        kind: CiliumNetworkPolicy
+        name: baseline-network-security
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        data:
+          spec:
+            endpointSelector: {}
+            ingress:
+              - {}
+            egress:
+              - toEndpoints:
+                  - matchLabels:
+                      k8s:io.kubernetes.pod.namespace: kube-system
+                      k8s-app: kube-dns
+                toPorts:
+                  - ports:
+                      - port: "53"
+                        protocol: ANY
+                    rules:
+                      dns:
+                        - matchPattern: "*"

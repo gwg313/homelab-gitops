@@ -4,6 +4,8 @@ metadata:
   name: kyverno:cleanup-pods
   labels:
     rbac.kyverno.io/aggregate-to-cleanup-controller: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
 rules:
   - apiGroups: [""]
     resources: ["pods"]
