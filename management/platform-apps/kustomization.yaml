@@ -7,5 +7,6 @@ resources:
   - tetragon-core.yaml
   - tetragon-policies.yaml
   - sealed-secrets.yaml
+  - cert-manager.yaml
   - forgejo.yaml
   - navidrome.yaml
