@@ -1,0 +1,27 @@
+nfs-subdir-external-provisioner:
+  nfs:
+    server: truenas.local.gwg313.xyz
+    path: /mnt/tank/k8s/nfs-subdir
+    mountOptions:
+      - hard
+      - noatime
+
+  storageClass:
+    create: true
+    name: nfs-client
+    defaultClass: true
+    accessModes: ReadWriteMany
+    reclaimPolicy: Delete
+    archiveOnDelete: "true"
+    pathPattern: "${.PVC.namespace}/${.PVC.name}"
+
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    fsGroup: 65534
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL

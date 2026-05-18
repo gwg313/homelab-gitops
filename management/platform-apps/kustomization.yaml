@@ -8,5 +8,6 @@ resources:
   - tetragon-policies.yaml
   - sealed-secrets.yaml
   - cert-manager.yaml
+  - nfs-subdir.yaml
   - forgejo.yaml
   - navidrome.yaml
