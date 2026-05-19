@@ -9,6 +9,9 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: audiobookshelf-iscsi
+  claimRef:
+    namespace: audiobookshelf
+    name: audiobookshelf-config
   iscsi:
     targetPortal: truenas.local.gwg313.xyz:3260
     iqn: iqn.2005-10.org.freenas.ctl:audiobookshelf-config
@@ -31,6 +34,9 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: audiobookshelf-iscsi
+  claimRef:
+    namespace: audiobookshelf
+    name: audiobookshelf-metadata
   iscsi:
     targetPortal: truenas.local.gwg313.xyz:3260
     iqn: iqn.2005-10.org.freenas.ctl:audiobookshelf-metadata
@@ -52,10 +58,13 @@ spec:
   accessModes:
     - ReadOnlyMany
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: audiobookshelf-nfs
+  claimRef:
+    namespace: audiobookshelf
+    name: audiobookshelf-audiobooks
   nfs:
     server: truenas.local.gwg313.xyz
     path: /mnt/tank/media/audiobooks
-  storageClassName: audiobookshelf-nfs
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -67,7 +76,10 @@ spec:
   accessModes:
     - ReadOnlyMany
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: audiobookshelf-nfs
+  claimRef:
+    namespace: audiobookshelf
+    name: audiobookshelf-podcasts
   nfs:
     server: truenas.local.gwg313.xyz
     path: /mnt/tank/media/podcasts
-  storageClassName: audiobookshelf-nfs

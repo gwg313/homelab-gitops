@@ -11,7 +11,6 @@ spec:
       storage: 1Gi
   volumeName: audiobookshelf-config-pv
   storageClassName: audiobookshelf-iscsi
-
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -26,7 +25,6 @@ spec:
       storage: 1Gi
   volumeName: audiobookshelf-metadata-pv
   storageClassName: audiobookshelf-iscsi
-
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

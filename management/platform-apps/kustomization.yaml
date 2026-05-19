@@ -11,6 +11,7 @@ resources:
   - monitoring.yaml
   - nfs-subdir.yaml
   - forgejo.yaml
+  - audiobookshelf.yaml
   - yopass.yaml
   - tekton.yaml
   - navidrome.yaml

@@ -1,0 +1,62 @@
+# ----------------------------------------------------
+# Ingress only from Gateway API
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: audiobookshelf
+spec:
+  endpointSelector:
+    matchLabels:
+      app: audiobookshelf
+
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+
+---
+# ----------------------------------------------------
+# audible access (cover art, metadata)
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-audible
+  namespace: audiobookshelf
+spec:
+  endpointSelector:
+    matchLabels:
+      app: audiobookshelf
+
+  egress:
+    - toFQDNs:
+        - matchName: audible.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+# ----------------------------------------------------
+# OPTIONAL: unrestricted HTTPS egress (disabled)
+# ----------------------------------------------------
+# apiVersion: cilium.io/v2
+# kind: CiliumNetworkPolicy
+# metadata:
+#   name: allow-all-egress
+#   namespace: audiobookshelf
+# spec:
+#   endpointSelector:
+#     matchLabels:
+#       app: audiobookshelf
+#
+#   egress:
+#     - toEntities:
+#         - world
+#       toPorts:
+#         - ports:
+#             - port: "443"
+#               protocol: TCP
