@@ -1,0 +1,38 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: harbor
+  namespace: harbor
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: shared-edge-gateway
+      namespace: cilium-ingress
+  hostnames:
+    - registry.gwg313.xyz
+    - registry.local.gwg313.xyz
+    - registry.zerotier.gwg313.xyz
+  rules:
+    - matches:
+        - path: { type: PathPrefix, value: "/api/" }
+        - path: { type: PathPrefix, value: "/service/" }
+        - path: { type: PathPrefix, value: "/chartrepo" }
+        - path: { type: PathPrefix, value: "/c/" }
+        - path: { type: PathPrefix, value: "/v1/" }
+        - path: { type: PathPrefix, value: "/v2/" }
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: harbor-core
+          port: 80
+          weight: 1
+
+    - matches:
+        - path: { type: PathPrefix, value: "/" }
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: harbor-portal
+          port: 80
+          weight: 1

@@ -1,0 +1,37 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: harbor-intra-namespace-allow
+  namespace: harbor
+spec:
+  description: "Allow all internal Harbor microservices to talk to each other cleanly"
+  endpointSelector:
+    matchLabels:
+      app: harbor
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: harbor
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: harbor
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: harbor
+spec:
+  description: "Allow external traffic from the shared Cilium edge proxy into the harbor namespace services"
+  endpointSelector:
+    matchLabels: {}
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "8080"
+              protocol: TCP

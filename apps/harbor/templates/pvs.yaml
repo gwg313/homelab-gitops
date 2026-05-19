@@ -1,3 +1,4 @@
+# Harbor: Registry
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -10,6 +11,10 @@ spec:
   volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Retain
   storageClassName: harbor-iscsi
+  # --- PRE-BINDING LOCK ---
+  claimRef:
+    namespace: harbor
+    name: harbor-registry
   iscsi:
     targetPortal: truenas.local.gwg313.xyz
     iqn: iqn.2005-10.org.freenas.ctl:harbor-registry
@@ -20,23 +25,6 @@ spec:
     chapAuthSession: true
     secretRef:
       name: harbor-iscsi-auth
-      namespace: harbor
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-registry
-  namespace: harbor
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: harbor-iscsi
-  volumeName: harbor-registry-pv
-  resources:
-    requests:
-      storage: 200Gi
-
-# Harbor: Jobservice
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -50,6 +38,9 @@ spec:
   volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Retain
   storageClassName: harbor-iscsi
+  claimRef:
+    namespace: harbor
+    name: harbor-jobservice
   iscsi:
     targetPortal: truenas.local.gwg313.xyz
     iqn: iqn.2005-10.org.freenas.ctl:harbor-jobservice
@@ -60,23 +51,6 @@ spec:
     chapAuthSession: true
     secretRef:
       name: harbor-iscsi-auth
-      namespace: harbor
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-jobservice
-  namespace: harbor
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: harbor-iscsi
-  volumeName: harbor-jobservice-pv
-  resources:
-    requests:
-      storage: 10Gi
-
-# Harbor: Database
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -90,6 +64,9 @@ spec:
   volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Retain
   storageClassName: harbor-iscsi
+  claimRef:
+    namespace: harbor
+    name: harbor-database
   iscsi:
     targetPortal: truenas.local.gwg313.xyz
     iqn: iqn.2005-10.org.freenas.ctl:harbor-database
@@ -100,23 +77,6 @@ spec:
     chapAuthSession: true
     secretRef:
       name: harbor-iscsi-auth
-      namespace: harbor
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-database
-  namespace: harbor
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: harbor-iscsi
-  volumeName: harbor-database-pv
-  resources:
-    requests:
-      storage: 10Gi
-
-# Harbor: Redis
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -130,6 +90,9 @@ spec:
   volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Retain
   storageClassName: harbor-iscsi
+  claimRef:
+    namespace: harbor
+    name: harbor-redis
   iscsi:
     targetPortal: truenas.local.gwg313.xyz
     iqn: iqn.2005-10.org.freenas.ctl:harbor-redis
@@ -140,23 +103,6 @@ spec:
     chapAuthSession: true
     secretRef:
       name: harbor-iscsi-auth
-      namespace: harbor
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-redis
-  namespace: harbor
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: harbor-iscsi
-  volumeName: harbor-redis-pv
-  resources:
-    requests:
-      storage: 10Gi
-
-# Harbor: Trivy
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -170,6 +116,9 @@ spec:
   volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Retain
   storageClassName: harbor-iscsi
+  claimRef:
+    namespace: harbor
+    name: harbor-trivy
   iscsi:
     targetPortal: truenas.local.gwg313.xyz
     iqn: iqn.2005-10.org.freenas.ctl:harbor-trivy
@@ -180,18 +129,3 @@ spec:
     chapAuthSession: true
     secretRef:
       name: harbor-iscsi-auth
-      namespace: harbor
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: harbor-trivy
-  namespace: harbor
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: harbor-iscsi
-  volumeName: harbor-trivy-pv
-  resources:
-    requests:
-      storage: 10Gi

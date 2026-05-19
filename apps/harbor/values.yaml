@@ -1,0 +1,111 @@
+harbor:
+  externalURL: https://registry.gwg313.xyz
+  
+  nginx:
+    replicas: 0
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        cpu: 50m
+        memory: 32Mi
+
+  portal:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+  core:
+    updateStrategy:
+      type: Recreate
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  jobservice:
+    updateStrategy:
+      type: Recreate
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+  registry:
+    updateStrategy:
+      type: Recreate
+    registry:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+    controller:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+
+  trivy:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+
+  database:
+    internal:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+
+  redis:
+    internal:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+
+  persistence:
+    enabled: true
+    persistentVolumeClaim:
+      registry:
+        existingClaim: harbor-registry
+      jobservice:
+        existingClaim: harbor-jobservice
+      trivy:
+        existingClaim: harbor-trivy
+      database:
+        existingClaim: harbor-database
+      redis:
+        existingClaim: harbor-redis
+      core:
+        existingClaim: harbor-core
+
+  ingress:
+    enabled: false

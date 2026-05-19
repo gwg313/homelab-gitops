@@ -1,22 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: istio-base
+  name: harbor
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-wave: "10"
 spec:
   project: default
-  source:
-    repoURL: https://istio-release.storage.googleapis.com/charts
-    chart: base
-    targetRevision: 1.26.0
   destination:
     server: https://kubernetes.default.svc
-    namespace: istio-system
+    namespace: harbor
+  source:
+    repoURL: https://github.com/gwg313/homelab-gitops.git
+    path: apps/harbor
+    targetRevision: main
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true

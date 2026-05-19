@@ -10,6 +10,7 @@ resources:
   - cert-manager.yaml
   - monitoring.yaml
   - nfs-subdir.yaml
+  - harbor.yaml
   - forgejo.yaml
   - audiobookshelf.yaml
   - yopass.yaml
