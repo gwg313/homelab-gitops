@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stirling-pdf
+  namespace: stirling-pdf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stirling-pdf
+  template:
+    metadata:
+      labels:
+        app: stirling-pdf
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: stirling-pdf
+          image: docker.stirlingpdf.com/stirlingtools/stirling-pdf:2.11.0-fat
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: stirling-data
+              mountPath: /usr/share/tessdata
+              subPath: training-data
+            - name: stirling-data
+              mountPath: /configs
+              subPath: configs
+            - name: stirling-data
+              mountPath: /customFiles
+              subPath: custom-files
+            - name: stirling-data
+              mountPath: /logs
+              subPath: logs
+            - name: stirling-data
+              mountPath: /pipeline
+              subPath: pipeline
+      volumes:
+        - name: stirling-data
+          persistentVolumeClaim:
+            claimName: stirling-data

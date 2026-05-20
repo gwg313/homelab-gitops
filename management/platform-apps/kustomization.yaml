@@ -17,3 +17,4 @@ resources:
   - tekton.yaml
   - navidrome.yaml
   - bytestash.yaml
+  - stirling-pdf.yaml

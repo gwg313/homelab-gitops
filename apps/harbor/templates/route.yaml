@@ -36,3 +36,21 @@ spec:
           name: harbor-portal
           port: 80
           weight: 1
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-ingress-to-harbor
+  namespace: harbor
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: cilium-ingress
+  to:
+    - group: ""
+      kind: Service
+      name: harbor-core
+    - group: ""
+      kind: Service
+      name: harbor-portal
