@@ -16,3 +16,4 @@ resources:
   - yopass.yaml
   - tekton.yaml
   - navidrome.yaml
+  - bytestash.yaml

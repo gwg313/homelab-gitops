@@ -21,9 +21,16 @@ spec:
           type: RuntimeDefault
       containers:
         - name: bytestash
-          image: "ghcr.io/jordan-dalby/bytestash:latest"
+          image: "ghcr.io/jordan-dalby/bytestash:pr-332"
           ports:
             - containerPort: 5000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
           envFrom:
             - configMapRef:
                 name: bytestash-config
