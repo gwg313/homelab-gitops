@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
   - https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml
+  - https://raw.githubusercontent.com/openshift-pipelines/pipelines-as-code/stable/release.k8s.yaml

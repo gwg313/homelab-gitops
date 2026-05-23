@@ -5,6 +5,8 @@ metadata:
   annotations:
     policies.kyverno.io/title: Inject Namespace Baseline CNP
     policies.kyverno.io/description: Automatically provisions a local default-deny + DNS egress CNP inside new application namespaces.
+    argocd.argoproj.io/sync-options: Force=true,Replace=true
+
 spec:
   background: true
   rules:
@@ -32,6 +34,7 @@ spec:
                 - monitoring
                 - tekton-pipelines-resolvers
                 - tekton-pipelines
+                - pipelines-as-code
       generate:
         apiVersion: cilium.io/v2
         kind: CiliumNetworkPolicy

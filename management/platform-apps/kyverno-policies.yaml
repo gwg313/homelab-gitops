@@ -18,8 +18,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=false
-      - ServerSideApply=true
-      - Replace=true # <-- Policies have immutable fields so this helps deal with updates
-      - Force=true

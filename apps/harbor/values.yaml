@@ -1,5 +1,7 @@
 harbor:
   externalURL: https://registry.gwg313.xyz
+  updateStrategy:
+    type: Recreate
   
   nginx:
     replicas: 0
@@ -21,8 +23,6 @@ harbor:
         memory: 128Mi
 
   core:
-    updateStrategy:
-      type: Recreate
     resources:
       requests:
         cpu: 100m
@@ -32,8 +32,6 @@ harbor:
         memory: 512Mi
 
   jobservice:
-    updateStrategy:
-      type: Recreate
     resources:
       requests:
         cpu: 100m

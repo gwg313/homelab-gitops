@@ -36,6 +36,8 @@ spec:
                 - monitoring
                 - tekton-pipelines-resolvers
                 - tekton-pipelines
+                - pipelines-as-code
+                - cicd
       validate:
         message: "Resource discipline violation: Containers must declare cpu/memory requests and limits."
         pattern:
