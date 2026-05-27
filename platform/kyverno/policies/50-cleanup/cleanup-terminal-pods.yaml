@@ -1,21 +1,24 @@
 apiVersion: kyverno.io/v2beta1
 kind: ClusterCleanupPolicy
 metadata:
-  name: purge-terminal-pods
+  name: cleanup-terminal-pods
 spec:
   match:
     any:
       - resources:
           kinds:
             - Pod
-  schedule: "*/15 * * * *"
+
   conditions:
     all:
-      - key: "{{ request.object.status.phase }}"
+      - key: "{{ target.status.phase }}"
         operator: AnyIn
         value:
           - Succeeded
           - Failed
-      - key: "{{ request.object.metadata.creationTimestamp }}"
-        operator: DurationGreaterThan
+
+      - key: "{{ time_diff('{{ target.metadata.creationTimestamp }}','{{ time_now_utc() }}') }}"
+        operator: GreaterThan
         value: 30m
+
+  schedule: "*/15 * * * *"

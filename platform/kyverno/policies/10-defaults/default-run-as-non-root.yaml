@@ -1,0 +1,46 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-run-as-non-root
+spec:
+  background: true
+
+  rules:
+
+    - name: default-pod-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      mutate:
+        patchStrategicMerge:
+          spec:
+            securityContext:
+              +(runAsNonRoot): true
+
+    - name: default-container-run-as-non-root
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{ element.name }}"
+                    securityContext:
+                      +(runAsNonRoot): true
+
+          - list: "request.object.spec.initContainers || []"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{ element.name }}"
+                    securityContext:
+                      +(runAsNonRoot): true

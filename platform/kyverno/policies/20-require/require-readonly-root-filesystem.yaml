@@ -1,0 +1,38 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-readonly-root-filesystem
+  annotations:
+    policies.kyverno.io/title: Require Read-Only Root Filesystem
+    policies.kyverno.io/category: Pod Security
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Audit
+  background: true
+
+  rules:
+    - name: require-readonly-root-filesystem
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      validate:
+        message: "Containers must use readOnlyRootFilesystem=true."
+
+        foreach:
+          - list: "request.object.spec.containers"
+            pattern:
+              securityContext:
+                readOnlyRootFilesystem: true
+
+          - list: "request.object.spec.initContainers"
+            pattern:
+              securityContext:
+                readOnlyRootFilesystem: true
+
+          - list: "request.object.spec.ephemeralContainers"
+            pattern:
+              securityContext:
+                readOnlyRootFilesystem: true

@@ -12,8 +12,17 @@ spec:
       labels:
         app.kubernetes.io/name: yopass
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
         - name: yopass
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: false
           image: jhaals/yopass:13.1.0
           args:
             - "--memcached=localhost:11211"

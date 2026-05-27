@@ -1,0 +1,49 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-seccomp-runtime-default
+
+spec:
+  background: true
+
+  rules:
+    - name: default-pod-seccomp-runtime-default
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      mutate:
+        patchStrategicMerge:
+          spec:
+            securityContext:
+              seccompProfile:
+                type: RuntimeDefault
+
+    - name: default-container-seccomp-runtime-default
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{ element.name }}"
+                    securityContext:
+                      seccompProfile:
+                        type: RuntimeDefault
+
+          - list: "request.object.spec.initContainers || []"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{ element.name }}"
+                    securityContext:
+                      seccompProfile:
+                        type: RuntimeDefault

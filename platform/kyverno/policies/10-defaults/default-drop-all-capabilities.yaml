@@ -1,0 +1,36 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-drop-all-capabilities
+spec:
+  background: true
+
+  rules:
+    - name: default-drop-all-capabilities
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - (name): "{{ element.name }}"
+                    securityContext:
+                      +(capabilities):
+                        drop:
+                          - ALL
+
+          - list: "request.object.spec.initContainers || []"
+            patchStrategicMerge:
+              spec:
+                initContainers:
+                  - (name): "{{ element.name }}"
+                    securityContext:
+                      +(capabilities):
+                        drop:
+                          - ALL

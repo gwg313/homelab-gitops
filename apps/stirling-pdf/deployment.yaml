@@ -14,9 +14,15 @@ spec:
         app: stirling-pdf
     spec:
       securityContext:
-        fsGroup: 1000
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
       containers:
         - name: stirling-pdf
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
           image: docker.stirlingpdf.com/stirlingtools/stirling-pdf:2.11.0-fat
           resources:
             requests:
@@ -43,7 +49,25 @@ spec:
             - name: stirling-data
               mountPath: /pipeline
               subPath: pipeline
+
+            - name: stirling-user
+              mountPath: /home
+
+            - name: tmp
+              mountPath: /tmp
+            - name: stirling
+              mountPath: /tmp/stirling-pdf
+            - name: app-data
+              mountPath: /usr/local/bin
       volumes:
         - name: stirling-data
           persistentVolumeClaim:
             claimName: stirling-data
+        - name: tmp
+          emptyDir: {}
+        - name: stirling
+          emptyDir: {}
+        - name: app-data
+          emptyDir: {}
+        - name: stirling-user
+          emptyDir: {}

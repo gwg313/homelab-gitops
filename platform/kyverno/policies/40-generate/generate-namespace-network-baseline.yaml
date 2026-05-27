@@ -1,21 +1,28 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: generate-ns-network-baseline
+  name: generate-namespace-network-baseline
   annotations:
-    policies.kyverno.io/title: Inject Namespace Baseline CNP
-    policies.kyverno.io/description: Automatically provisions a local default-deny + DNS egress CNP inside new application namespaces.
+    policies.kyverno.io/title: Generate Namespace Network Baseline
+    policies.kyverno.io/category: Network Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/description: >-
+      Automatically provisions a baseline CiliumNetworkPolicy
+      with default deny ingress and controlled DNS egress.
     argocd.argoproj.io/sync-options: Force=true,Replace=true
 
 spec:
   background: true
+
   rules:
-    - name: inject-local-cnp
+    - name: generate-baseline-cnp
+
       match:
         any:
           - resources:
               kinds:
                 - Namespace
+
       exclude:
         any:
           - resources:
@@ -24,37 +31,53 @@ spec:
                 - kube-system
                 - kube-public
                 - kube-node-lease
-                - argocd
                 - kyverno
-                - cilium-ingress
-                - cilium-secrets
+                - argocd
                 - cert-manager
-                - sealed-secrets
-                - nfs-subdir-external-provisioner
                 - monitoring
-                - tekton-pipelines-resolvers
+                - cilium-secrets
+                - cilium-ingress
+                - sealed-secrets
                 - tekton-pipelines
+                - tekton-pipelines-resolvers
                 - pipelines-as-code
+
       generate:
+        synchronize: true
+
         apiVersion: cilium.io/v2
         kind: CiliumNetworkPolicy
+
         name: baseline-network-security
-        namespace: "{{request.object.metadata.name}}"
-        synchronize: true
+        namespace: "{{ request.object.metadata.name }}"
+
         data:
+          metadata:
+            labels:
+              security-tier: baseline
+
           spec:
             endpointSelector: {}
-            ingress:
-              - {}
+
+            policyTypes:
+              - Ingress
+              - Egress
+
+            ingress: []
+
             egress:
               - toEndpoints:
                   - matchLabels:
                       k8s:io.kubernetes.pod.namespace: kube-system
                       k8s-app: kube-dns
+
                 toPorts:
                   - ports:
                       - port: "53"
-                        protocol: ANY
+                        protocol: UDP
+                      - port: "53"
+                        protocol: TCP
+
                     rules:
                       dns:
                         - matchPattern: "*"

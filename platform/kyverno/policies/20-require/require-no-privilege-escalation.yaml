@@ -1,0 +1,43 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-no-privilege-escalation
+spec:
+  validationFailureAction: Enforce
+  background: true
+
+  rules:
+    - name: require-no-privilege-escalation
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+
+      validate:
+        message: "allowPrivilegeEscalation must be false."
+
+        foreach:
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.securityContext.allowPrivilegeEscalation || `false` }}"
+                    operator: Equals
+                    value: true
+
+          - list: "request.object.spec.initContainers || []"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.securityContext.allowPrivilegeEscalation || `false` }}"
+                    operator: Equals
+                    value: true
+
+          - list: "request.object.spec.ephemeralContainers || []"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.securityContext.allowPrivilegeEscalation || `false` }}"
+                    operator: Equals
+                    value: true

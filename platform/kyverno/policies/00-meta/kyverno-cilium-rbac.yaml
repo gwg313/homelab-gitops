@@ -5,6 +5,7 @@ metadata:
   labels:
     kyverno.io/aggregate-to-background: "true"
     kyverno.io/aggregate-to-reports: "true"
+    app.kubernetes.io/component: kyverno
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 rules:

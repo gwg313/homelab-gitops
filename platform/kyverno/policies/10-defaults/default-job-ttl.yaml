@@ -1,0 +1,17 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-job-ttl
+spec:
+  rules:
+    - name: set-job-ttl
+      match:
+        any:
+          - resources:
+              kinds:
+                - Job
+
+      mutate:
+        patchStrategicMerge:
+          spec:
+            +(ttlSecondsAfterFinished): 86400

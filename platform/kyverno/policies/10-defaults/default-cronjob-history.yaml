@@ -1,0 +1,18 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-cronjob-history
+spec:
+  rules:
+    - name: set-cronjob-history
+      match:
+        any:
+          - resources:
+              kinds:
+                - CronJob
+
+      mutate:
+        patchStrategicMerge:
+          spec:
+            +(successfulJobsHistoryLimit): 1
+            +(failedJobsHistoryLimit): 2

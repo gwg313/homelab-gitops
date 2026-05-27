@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v2beta1
+kind: ClusterCleanupPolicy
+metadata:
+  name: cleanup-evicted-pods
+spec:
+  match:
+    any:
+      - resources:
+          kinds:
+            - Pod
+
+  conditions:
+    all:
+      - key: "{{ target.status.reason }}"
+        operator: Equals
+        value: Evicted
+
+      - key: "{{ time_diff('{{ target.metadata.creationTimestamp }}','{{ time_now_utc() }}') }}"
+        operator: GreaterThan
+        value: 1h
+
+  schedule: "0 * * * *"

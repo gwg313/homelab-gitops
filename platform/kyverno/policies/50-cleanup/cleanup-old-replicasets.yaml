@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v2beta1
+kind: ClusterCleanupPolicy
+metadata:
+  name: cleanup-old-replicasets
+spec:
+  match:
+    any:
+      - resources:
+          kinds:
+            - ReplicaSet
+
+  conditions:
+    all:
+      - key: "{{ target.spec.replicas || `0` }}"
+        operator: Equals
+        value: 0
+
+      - key: "{{ time_diff('{{ target.metadata.creationTimestamp }}','{{ time_now_utc() }}') }}"
+        operator: GreaterThan
+        value: 168h
+
+  schedule: "0 3 * * *"

@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - require-drop-all-capabilities.yaml
+  - require-no-privilege-escalation.yaml
+  - require-non-root.yaml
+  - require-readonly-root-filesystem.yaml
+  - require-requests-limits.yaml
+  - require-seccomp-runtime-default.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: kyverno-policies
+  policy-tier: require
+
+commonAnnotations:
+  argocd.argoproj.io/sync-wave: "1"

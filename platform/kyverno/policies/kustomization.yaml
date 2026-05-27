@@ -2,9 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - cleanup-rbac.yaml
-  - purge-terminal-pods.yaml
-  - disallow-latest-tag.yaml
-  - kyverno-cilium-rbac.yaml
-  - generate-ns-network-baseline.yaml
-  - require-requests-limits.yaml
+- 00-meta
+- 10-defaults
+- 20-require
+- 30-disallow
+- 40-generate
+- 50-cleanup
