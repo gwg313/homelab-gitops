@@ -1,0 +1,25 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: detect-sensitive-file-access
+spec:
+  kprobes:
+    - call: "security_file_open"
+      syscall: false
+
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: Prefix
+              values:
+                - /etc/shadow
+                - /etc/passwd
+                - /root
+                - /proc/kcore
+                - /var/run/secrets/kubernetes.io
+
+      args:
+        - index: 0
+          type: string
+
+      return: true
