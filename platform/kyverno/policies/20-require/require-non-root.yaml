@@ -17,6 +17,12 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchLabels:
+                  security.policy/allow-root: "true"
 
       validate:
         message: "Pods must set runAsNonRoot=true."
@@ -31,6 +37,12 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchLabels:
+                  security.policy/allow-root: "true"
 
       validate:
         message: "All containers must set runAsNonRoot=true."

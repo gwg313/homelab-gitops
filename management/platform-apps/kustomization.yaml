@@ -18,3 +18,4 @@ resources:
   - navidrome.yaml
   - bytestash.yaml
   - stirling-pdf.yaml
+  - soulsync.yaml

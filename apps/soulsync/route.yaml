@@ -1,0 +1,83 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: slskd
+  namespace: slskd
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: shared-edge-gateway
+      namespace: cilium-ingress
+  hostnames:
+    - slskd.local.gwg313.xyz
+    - slskd.gwg313.xyz
+    - slskd.zerotier.gwg313.xyz
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: slskd
+          port: 80
+          weight: 1
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-gateway-to-slskd
+  namespace: slskd
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: cilium-ingress
+  to:
+    - group: ""
+      kind: Service
+      name: slskd
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: soulsync
+  namespace: slskd
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: shared-edge-gateway
+      namespace: cilium-ingress
+  hostnames:
+    - soulsync.local.gwg313.xyz
+    - soulsync.gwg313.xyz
+    - soulsync.zerotier.gwg313.xyz
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: soulsync
+          port: 80
+          weight: 1
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-gateway-to-soulsync
+  namespace: slskd
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: cilium-ingress
+  to:
+    - group: ""
+      kind: Service
+      name: soulsync

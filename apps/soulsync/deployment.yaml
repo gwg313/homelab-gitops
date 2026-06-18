@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slskd
+  namespace: slskd
+  labels:
+    app: slskd
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate 
+  selector:
+    matchLabels:
+      app: slskd
+  template:
+    metadata:
+      labels:
+        app: slskd
+        security.policy/allow-root: "true"
+    spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: wireguard-config-init
+          image: busybox:1.37.0
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            runAsNonRoot: false
+            capabilities:
+              drop:
+                - ALL
+          command:
+            - sh
+            - -c
+            - mkdir -p /config/wg_confs && cp /secrets/wg0.conf /config/wg_confs/wg0.conf
+          volumeMounts:
+            - name: wg-secret
+              mountPath: /secrets
+              readOnly: true
+            - name: wg-config
+              mountPath: /config
+
+      containers:
+        - name: protonvpn-wireguard
+          image: linuxserver/wireguard:1.0.20250521
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            runAsNonRoot: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_ADMIN
+                - NET_RAW
+          env:
+            - name: ALLOWEDIPS
+              value: "0.0.0.0/0"
+          volumeMounts:
+            - name: wg-config
+              mountPath: /config
+
+        - name: slskd
+          image: slskd/slskd:0.25.1.65534-8e152ed6
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 5030
+              name: web-ui
+          env:
+            - name: SLSKD_APP_DIR
+              value: /app/config
+            - name: SLSKD_DOWNLOADS_DIR
+              value: /app/downloads
+          volumeMounts:
+            - name: slskd-config
+              mountPath: /app/config
+            - name: slskd-downloads
+              mountPath: /app/downloads
+            - name: slskd-music
+              mountPath: /app/music
+              readOnly: true
+
+        - name: soulsync
+          image: boulderbadgedad/soulsync:2.7.3
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 8080
+              name: soulsync-ui
+          env:
+            - name: SLSKD_URL
+              value: "http://localhost:5030"
+          volumeMounts:
+            - name: soulsync-config
+              mountPath: /app/config
+            - name: soulsync-data
+              mountPath: /app/data
+            - name: slskd-downloads
+              mountPath: /app/downloads
+            - name: slskd-music
+              mountPath: /app/music
+            - name: soulsync-ephemeral
+              mountPath: /app/logs
+              subPath: logs
+            - name: soulsync-ephemeral
+              mountPath: /app/Transfer
+              subPath: Transfer
+            - name: soulsync-ephemeral
+              mountPath: /app/Staging
+              subPath: Staging
+            - name: soulsync-ephemeral
+              mountPath: /app/Stream
+              subPath: Stream
+            - name: soulsync-ephemeral
+              mountPath: /app/storage
+              subPath: storage
+            - name: soulsync-ephemeral
+              mountPath: /app/MusicVideos
+              subPath: MusicVideos
+            - name: soulsync-ephemeral
+              mountPath: /app/scripts
+              subPath: scripts
+
+      volumes:
+        - name: wg-secret
+          secret:
+            secretName: protonvpn-wg-conf
+        - name: wg-config
+          emptyDir: {}
+        - name: slskd-config
+          persistentVolumeClaim:
+            claimName: slskd-config
+        - name: soulsync-config
+          persistentVolumeClaim:
+            claimName: soulsync-config
+        - name: soulsync-data
+          persistentVolumeClaim:
+            claimName: soulsync-data
+        - name: soulsync-ephemeral
+          emptyDir: {}
+        - name: slskd-downloads
+          persistentVolumeClaim:
+            claimName: slskd-downloads
+        - name: slskd-music
+          persistentVolumeClaim:
+            claimName: slskd-music

@@ -1,0 +1,45 @@
+# ----------------------------------------------------
+# Ingress only from Gateway API
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: slskd
+spec:
+  endpointSelector:
+    matchLabels:
+      app: slskd
+
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "5030"
+              protocol: TCP
+            - port: "8080"
+              protocol: TCP
+
+---
+# ----------------------------------------------------
+# VPN killswitch — only allow egress to ProtonVPN endpoint
+# All other internet traffic is blocked, forcing it through the tunnel
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vpn-killswitch
+  namespace: slskd
+spec:
+  endpointSelector:
+    matchLabels:
+      app: slskd
+
+  egress:
+    - toCIDR:
+        - "149.50.216.205/32"
+      toPorts:
+        - ports:
+            - port: "51820"
+              protocol: UDP

@@ -1,1 +1,3 @@
 .devenv
+apps/**/protonvpn-wg-secret.yaml
+apps/**/*-secret.yaml
