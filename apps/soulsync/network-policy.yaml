@@ -18,7 +18,7 @@ spec:
         - ports:
             - port: "5030"
               protocol: TCP
-            - port: "8080"
+            - port: "8008"
               protocol: TCP
 
 ---
@@ -43,3 +43,16 @@ spec:
         - ports:
             - port: "51820"
               protocol: UDP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"

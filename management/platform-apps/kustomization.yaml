@@ -18,5 +18,5 @@ resources:
   - navidrome.yaml
   - bytestash.yaml
   - stirling-pdf.yaml
-  - soulsync.yaml
+  # - soulsync.yaml
   - vikunja.yaml

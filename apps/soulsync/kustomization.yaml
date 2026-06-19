@@ -6,6 +6,7 @@ resources:
   - storage.yaml
   - pvcs.yaml
   - protonvpn-wg-sealed.yaml
+  - slskd-sealed.yaml
   - network-policy.yaml
   - deployment.yaml
   - service.yaml

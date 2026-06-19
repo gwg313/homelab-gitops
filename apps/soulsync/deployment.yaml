@@ -78,6 +78,13 @@ spec:
               value: /app/config
             - name: SLSKD_DOWNLOADS_DIR
               value: /app/downloads
+            - name: SLSKD_SHARED_DIR
+              value: /app/music
+            - name: SLSKD_REMOTE_CONFIGURATION
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: slskd-credentials
           volumeMounts:
             - name: slskd-config
               mountPath: /app/config
@@ -97,7 +104,7 @@ spec:
               drop:
                 - ALL
           ports:
-            - containerPort: 8080
+            - containerPort: 8008
               name: soulsync-ui
           env:
             - name: SLSKD_URL
