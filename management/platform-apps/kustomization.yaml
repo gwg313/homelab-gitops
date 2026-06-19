@@ -19,3 +19,4 @@ resources:
   - bytestash.yaml
   - stirling-pdf.yaml
   - soulsync.yaml
+  - vikunja.yaml
