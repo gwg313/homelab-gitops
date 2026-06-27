@@ -1,0 +1,73 @@
+version: '3'
+
+vars:
+  SEALED_SECRETS_NS: sealed-secrets
+  SEALED_SECRETS_NAME: sealed-secrets
+
+tasks:
+  default:
+    desc: Run all checks (lint, validate, secrets scan)
+    cmds:
+      - task: lint
+      - task: validate
+      - task: secrets
+
+  lint:
+    desc: Lint YAML files and shell scripts
+    cmds:
+      - task: lint:yaml
+      - task: lint:shell
+
+  lint:yaml:
+    desc: Lint YAML files with yamllint
+    cmd: yamllint .
+
+  lint:shell:
+    desc: Lint shell scripts with shellcheck
+    cmd: |
+      files=$(git ls-files '*.sh')
+      if [ -z "$files" ]; then
+        echo "No shell scripts to check."
+      else
+        echo "$files" | xargs shellcheck
+      fi
+
+  fmt:
+    desc: Format all YAML files in-place with yamlfmt
+    cmd: yamlfmt .
+
+  validate:
+    desc: Validate Kubernetes manifests with kubeconform
+    cmd: |
+      git ls-files '*.yaml' '*.yml' | xargs kubeconform \
+        -strict \
+        -summary \
+        -ignore-missing-schemas \
+        -schema-location '{{`{{.ResourceKind}}`}}-{{`{{.ResourceAPIVersion}}`}}.json' \
+        -schema-location 'https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{`{{.ResourceKind}}`}}-{{`{{.ResourceAPIVersion}}`}}.json' \
+        -schema-location default
+
+  secrets:
+    desc: Scan for leaked secrets with gitleaks
+    cmd: gitleaks detect --no-git -v --redact
+
+  seal:
+    desc: "Seal a Kubernetes secret (usage: task seal INPUT=secret.yaml OUTPUT=secret-sealed.yaml)"
+    requires:
+      vars: [INPUT, OUTPUT]
+    cmd: |
+      kubeseal \
+        --controller-namespace {{.SEALED_SECRETS_NS}} \
+        --controller-name {{.SEALED_SECRETS_NAME}} \
+        -f {{.INPUT}} \
+        -w {{.OUTPUT}}
+
+  bootstrap:
+    desc: Apply the ArgoCD root app-of-apps to the cluster
+    cmd: kubectl apply -f bootstrap/root-app-of-apps.yaml
+
+  diff:
+    desc: "Diff a manifest against the live cluster (usage: task diff FILE=path/to/manifest.yaml)"
+    requires:
+      vars: [FILE]
+    cmd: kubectl diff -f {{.FILE}}
