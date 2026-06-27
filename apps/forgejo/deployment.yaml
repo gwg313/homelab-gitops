@@ -42,6 +42,8 @@ spec:
               value: "false"
             - name: FORGEJO__webhook__ALLOWED_HOST_LIST
               value: "ci.gwg313.xyz"
+            - name: FORGEJO__migrations__ALLOWED_DOMAINS
+              value: "github.com,*.github.com"
           volumeMounts:
             - name: forgejo-volume
               mountPath: /var/lib/gitea
