@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 6am on monday"],
+  "ignorePaths": ["apps_bak/**", "apps_temp/**"],
+  "kubernetes": {
+    "fileMatch": ["apps/.+\\.ya?ml$", "platform/.+\\.ya?ml$"]
+  },
+  "packageRules": [
+    {
+      "description": "Skip images pinned to PR branches",
+      "matchCurrentVersion": "/^pr-/",
+      "enabled": false
+    },
+    {
+      "description": "Group platform Helm chart updates",
+      "matchManagers": ["helmv3"],
+      "matchFileNames": ["platform/**"],
+      "groupName": "platform helm charts",
+      "automerge": false
+    },
+    {
+      "description": "Group app image updates",
+      "matchManagers": ["kubernetes"],
+      "groupName": "app images",
+      "automerge": false
+    }
+  ]
+}
