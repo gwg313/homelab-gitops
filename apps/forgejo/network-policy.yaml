@@ -72,22 +72,22 @@ spec:
 # OPTIONAL: unrestricted egress (disabled by default)
 # Enable ONLY when required for troubleshooting or apps
 # ----------------------------------------------------
-# apiVersion: cilium.io/v2
-# kind: CiliumNetworkPolicy
-# metadata:
-#   name: allow-all-egress
-#   namespace: forgejo
-# spec:
-#   endpointSelector:
-#     matchLabels:
-#       app: forgejo
-#
-#   egress:
-#     - toEntities:
-#         - world
-#       toPorts:
-#         - ports:
-#             - port: "443"
-#               protocol: TCP
-#             - port: "80"
-#               protocol: TCP
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-all-egress
+  namespace: forgejo
+spec:
+  endpointSelector:
+    matchLabels:
+      app: forgejo
+
+  egress:
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "80"
+              protocol: TCP
