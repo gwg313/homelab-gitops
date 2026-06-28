@@ -17,6 +17,12 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        any:
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-any-capabilities: "true"
 
       validate:
         message: "All containers must drop ALL Linux capabilities."

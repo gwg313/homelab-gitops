@@ -9,7 +9,7 @@ metadata:
     policies.kyverno.io/description: >-
       Automatically provisions a baseline CiliumNetworkPolicy
       with default deny ingress and controlled DNS egress.
-    argocd.argoproj.io/sync-options: Force=true,Replace=true
+    argocd.argoproj.io/sync-options: Replace=true
 
 spec:
   background: true
@@ -55,6 +55,8 @@ spec:
           metadata:
             labels:
               security-tier: baseline
+            annotations:
+              argocd.argoproj.io/sync-options: Prune=false
 
           spec:
             endpointSelector: {}

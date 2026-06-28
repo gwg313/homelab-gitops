@@ -2,7 +2,7 @@ version: '3'
 
 vars:
   SEALED_SECRETS_NS: sealed-secrets
-  SEALED_SECRETS_NAME: sealed-secrets
+  SEALED_SECRETS_NAME: sealed-secrets-controller
 
 tasks:
   default:

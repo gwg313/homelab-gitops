@@ -15,8 +15,10 @@ resources:
   - audiobookshelf.yaml
   - yopass.yaml
   - tekton.yaml
+  - homelab-gitops.yaml
   - navidrome.yaml
   - bytestash.yaml
   - stirling-pdf.yaml
   # - soulsync.yaml
   - vikunja.yaml
+  - argocd-config.yaml

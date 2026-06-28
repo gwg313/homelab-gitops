@@ -1,8 +1,0 @@
-apiVersion: cilium.io/v1alpha1
-kind: TracingPolicy
-metadata:
-  name: detect-network-connections
-spec:
-  tracepoints:
-    - subsystem: tcp
-      event: tcp_connect

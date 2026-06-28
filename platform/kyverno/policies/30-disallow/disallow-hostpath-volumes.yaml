@@ -11,6 +11,12 @@ spec:
         any:
           - resources:
               kinds: ["Pod"]
+      exclude:
+        any:
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-hostpath: "true"
 
       validate:
         message: "hostPath volumes are not allowed (escape risk)."

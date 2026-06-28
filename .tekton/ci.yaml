@@ -1,0 +1,137 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: homelab-ci
+  annotations:
+    pipelinesascode.tekton.dev/on-event: "[pull_request, push]"
+    pipelinesascode.tekton.dev/on-target-branch: "[main]"
+    pipelinesascode.tekton.dev/max-keep-runs: "5"
+spec:
+  taskRunTemplate:
+    serviceAccountName: tekton-runner
+    podTemplate:
+      metadata:
+        labels:
+          # triggers built-in exemption in require-non-root ClusterPolicy
+          security.policy/allow-root: "true"
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+  workspaces:
+    - name: source
+      volumeClaimTemplate:
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 1Gi
+  params:
+    - name: repo_url
+      value: "{{ repo_url }}"
+    - name: revision
+      value: "{{ revision }}"
+    - name: clone_url
+      value: "http://forgejo.forgejo.svc.cluster.local/gwg313/homelab-gitops"
+  pipelineSpec:
+    params:
+      - name: repo_url
+        type: string
+      - name: revision
+        type: string
+      - name: clone_url
+        type: string
+    workspaces:
+      - name: source
+    tasks:
+      - name: clone
+        params:
+          - name: url
+            value: $(params.clone_url)
+          - name: revision
+            value: $(params.revision)
+        workspaces:
+          - name: output
+            workspace: source
+        taskRef:
+          resolver: cluster
+          params:
+            - name: kind
+              value: task
+            - name: name
+              value: git-clone
+            - name: namespace
+              value: cicd
+
+      - name: lint-yaml
+        runAfter: [clone]
+        workspaces:
+          - name: source
+            workspace: source
+        taskSpec:
+          workspaces:
+            - name: source
+          steps:
+            - name: yamllint
+              image: pipelinecomponents/yamllint:latest
+              workingDir: $(workspaces.source.path)
+              # explicit false prevents default-run-as-non-root mutation from adding true
+              securityContext:
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+              script: yamllint .
+
+      - name: validate
+        runAfter: [clone]
+        workspaces:
+          - name: source
+            workspace: source
+        taskSpec:
+          workspaces:
+            - name: source
+          steps:
+            - name: kubeconform
+              image: alpine:latest
+              workingDir: $(workspaces.source.path)
+              securityContext:
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+                # empty capabilities block prevents default-drop-all-capabilities
+                # mutation from adding drop:ALL — apk needs CAP_CHOWN to install packages
+                capabilities: {}
+              script: |
+                #!/bin/sh
+                set -e
+                apk add --no-cache curl git tar
+                curl -sSL \
+                  https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
+                  | tar xz -C /usr/local/bin
+                SCHEMA='https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{.ResourceKind}}-{{.ResourceAPIVersion}}.json'
+                git ls-files '*.yaml' '*.yml' | xargs kubeconform \
+                  -strict \
+                  -summary \
+                  -ignore-missing-schemas \
+                  -schema-location "$SCHEMA" \
+                  -schema-location default
+
+      - name: scan-secrets
+        runAfter: [clone]
+        workspaces:
+          - name: source
+            workspace: source
+        taskSpec:
+          workspaces:
+            - name: source
+          steps:
+            - name: gitleaks
+              image: ghcr.io/zricethezav/gitleaks:latest
+              workingDir: $(workspaces.source.path)
+              securityContext:
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: [ALL]
+              command: [gitleaks]
+              args: [detect, --no-git, -v, --redact, --source=.]

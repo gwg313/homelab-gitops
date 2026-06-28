@@ -2,11 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - tracingpolicy-shell-spawn.yaml
-  - tracingpolicy-network-connections.yaml
-  - tracingpolicy-sensitive-binaries.yaml
-  - tracingpolicy-privilege-escalation.yaml
-  - tracingpolicy-sensitive-file-access.yaml
+  - 10-audit-baseline
+  # - 20-enforce-execution
+  # - 30-enforce-fim
+  # - 40-enforce-network
+  # - 50-enforce-privilege
 
 commonLabels:
   app.kubernetes.io/part-of: tetragon-policies

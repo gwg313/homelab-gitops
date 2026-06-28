@@ -41,7 +41,7 @@ spec:
             - name: FORGEJO__ssh__START_SSH_SERVER
               value: "false"
             - name: FORGEJO__webhook__ALLOWED_HOST_LIST
-              value: "ci.gwg313.xyz"
+              value: "ci.gwg313.xyz,pipelines-as-code-controller.pipelines-as-code.svc.cluster.local"
             - name: FORGEJO__migrations__ALLOWED_DOMAINS
               value: "github.com,*.github.com"
           volumeMounts:

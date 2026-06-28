@@ -23,6 +23,10 @@ spec:
                       - tekton-pipelines
                   - key: tekton.dev/task
                     operator: Exists
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-latest-tag: "true"
       validate:
         message: "Using the 'latest' tag or omitting image tags is forbidden. Use a specific version semantic tag."
         foreach:

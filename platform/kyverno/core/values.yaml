@@ -3,5 +3,7 @@ kyverno:
     replicas: 2
     features:
       loggingFormat: text
+      policyExceptions:
+        enabled: true
     telemetry:
       enabled: false

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cicd
+  labels:
+    app.kubernetes.io/name: cicd
+    app.kubernetes.io/part-of: tekton
+    app.kubernetes.io/managed-by: argocd
+    policy.home.arpa/allow-root: "true"
+    policy.home.arpa/allow-latest-tag: "true"
+    policy.home.arpa/allow-any-capabilities: "true"

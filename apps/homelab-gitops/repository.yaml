@@ -1,0 +1,15 @@
+apiVersion: pipelinesascode.tekton.dev/v1alpha1
+kind: Repository
+metadata:
+  name: homelab-gitops
+  namespace: cicd
+spec:
+  url: https://git.gwg313.xyz/gwg313/homelab-gitops
+  git_provider:
+    url: http://forgejo.forgejo.svc.cluster.local
+    secret:
+      name: pac-forgejo-token
+      key: token
+    webhook_secret:
+      name: pac-forgejo-token
+      key: webhook-secret

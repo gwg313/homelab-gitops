@@ -23,6 +23,10 @@ spec:
               selector:
                 matchLabels:
                   security.policy/allow-root: "true"
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-root: "true"
 
       validate:
         message: "Pods must set runAsNonRoot=true."
@@ -43,6 +47,10 @@ spec:
               selector:
                 matchLabels:
                   security.policy/allow-root: "true"
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-root: "true"
 
       validate:
         message: "All containers must set runAsNonRoot=true."

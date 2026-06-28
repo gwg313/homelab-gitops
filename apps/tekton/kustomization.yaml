@@ -5,3 +5,28 @@ resources:
   - https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
   - https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml
   - https://raw.githubusercontent.com/openshift-pipelines/pipelines-as-code/stable/release.k8s.yaml
+  - namespace.yaml
+  - service-account.yaml
+  - tekton-runner-role.yaml
+  - tekton-runner-binding.yaml
+  - network-policy.yaml
+  - tasks/git-clone.yaml
+  - tasks/kaniko.yaml
+  - pac-network-policy.yaml
+  - pac-role.yaml
+
+patches:
+  - patch: |
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: tekton-pipelines
+        labels:
+          policy.home.arpa/allow-hostpath: "true"
+  - patch: |
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: pipelines-as-code
+        labels:
+          policy.home.arpa/allow-hostpath: "true"

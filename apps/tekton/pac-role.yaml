@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pac-task-reader
+  namespace: cicd
+rules:
+  - apiGroups: ["tekton.dev"]
+    resources: ["tasks"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pac-controller-cicd-access
+  namespace: cicd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pac-task-reader
+subjects:
+  - kind: ServiceAccount
+    name: pipelines-as-code-controller
+    namespace: pipelines-as-code
+  - kind: ServiceAccount
+    name: tekton-pipelines-resolvers
+    namespace: tekton-pipelines

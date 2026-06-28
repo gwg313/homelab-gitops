@@ -18,6 +18,21 @@ spec:
         - ports:
             - port: "3000"
               protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: pipelines-as-code
+            app: pipelines-as-code-controller
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: cicd
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
 # ---
 # # ----------------------------------------------------
 # # CI runner access (in-cluster service)
@@ -43,6 +58,29 @@ spec:
 #             - port: "443"
 #               protocol: TCP
 #
+---
+# ----------------------------------------------------
+# PAC controller webhook delivery (in-cluster)
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-pac-egress
+  namespace: forgejo
+spec:
+  endpointSelector:
+    matchLabels:
+      app: forgejo
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: pipelines-as-code
+            app: pipelines-as-code-controller
+      toPorts:
+        - ports:
+            - port: "8082"
+              protocol: TCP
+
 ---
 # ----------------------------------------------------
 # External git providers (FQDN restricted)
@@ -72,22 +110,22 @@ spec:
 # OPTIONAL: unrestricted egress (disabled by default)
 # Enable ONLY when required for troubleshooting or apps
 # ----------------------------------------------------
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: allow-all-egress
-  namespace: forgejo
-spec:
-  endpointSelector:
-    matchLabels:
-      app: forgejo
-
-  egress:
-    - toEntities:
-        - world
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
-            - port: "80"
-              protocol: TCP
+# apiVersion: cilium.io/v2
+# kind: CiliumNetworkPolicy
+# metadata:
+#   name: allow-all-egress
+#   namespace: forgejo
+# spec:
+#   endpointSelector:
+#     matchLabels:
+#       app: forgejo
+#
+#   egress:
+#     - toEntities:
+#         - world
+#       toPorts:
+#         - ports:
+#             - port: "443"
+#               protocol: TCP
+#             - port: "80"
+#               protocol: TCP
