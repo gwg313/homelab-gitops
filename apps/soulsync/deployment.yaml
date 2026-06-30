@@ -8,7 +8,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate 
+    type: Recreate
   selector:
     matchLabels:
       app: slskd
@@ -30,6 +30,13 @@ spec:
             capabilities:
               drop:
                 - ALL
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
           command:
             - sh
             - -c
@@ -40,7 +47,6 @@ spec:
               readOnly: true
             - name: wg-config
               mountPath: /config
-
       containers:
         - name: protonvpn-wireguard
           image: linuxserver/wireguard:1.0.20250521
@@ -54,13 +60,19 @@ spec:
               add:
                 - NET_ADMIN
                 - NET_RAW
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
           env:
             - name: ALLOWEDIPS
               value: "0.0.0.0/0"
           volumeMounts:
             - name: wg-config
               mountPath: /config
-
         - name: slskd
           image: slskd/slskd:0.25.1.65534-8e152ed6
           securityContext:
@@ -70,6 +82,13 @@ spec:
             capabilities:
               drop:
                 - ALL
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
           ports:
             - containerPort: 5030
               name: web-ui
@@ -93,9 +112,8 @@ spec:
             - name: slskd-music
               mountPath: /app/music
               readOnly: true
-
         - name: soulsync
-          image: boulderbadgedad/soulsync:2.7.3
+          image: boulderbadgedad/soulsync:2.8.3
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -103,12 +121,31 @@ spec:
             capabilities:
               drop:
                 - ALL
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
           ports:
             - containerPort: 8008
               name: soulsync-ui
           env:
             - name: SLSKD_URL
               value: "http://localhost:5030"
+            - name: PYTHONPATH
+              value: /app
+            - name: SOULSYNC_CONFIG_PATH
+              value: /app/config/config.json
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: UMASK
+              value: "022"
+            - name: TZ
+              value: America/New_York
           volumeMounts:
             - name: soulsync-config
               mountPath: /app/config
@@ -139,7 +176,6 @@ spec:
             - name: soulsync-ephemeral
               mountPath: /app/scripts
               subPath: scripts
-
       volumes:
         - name: wg-secret
           secret:

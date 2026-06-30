@@ -10,7 +10,6 @@ spec:
   endpointSelector:
     matchLabels:
       app: slskd
-
   ingress:
     - fromEntities:
         - ingress
@@ -20,7 +19,6 @@ spec:
               protocol: TCP
             - port: "8008"
               protocol: TCP
-
 ---
 # ----------------------------------------------------
 # VPN killswitch — only allow egress to ProtonVPN endpoint
@@ -35,7 +33,6 @@ spec:
   endpointSelector:
     matchLabels:
       app: slskd
-
   egress:
     - toCIDR:
         - "149.50.216.205/32"
@@ -43,6 +40,14 @@ spec:
         - ports:
             - port: "51820"
               protocol: UDP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: navidrome
+            app: navidrome
+      toPorts:
+        - ports:
+            - port: "4533"
+              protocol: TCP
     - toEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: kube-system
