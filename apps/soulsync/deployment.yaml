@@ -112,8 +112,46 @@ spec:
             - name: slskd-music
               mountPath: /app/music
               readOnly: true
+      volumes:
+        - name: wg-secret
+          secret:
+            secretName: protonvpn-wg-conf
+        - name: wg-config
+          emptyDir: {}
+        - name: slskd-config
+          persistentVolumeClaim:
+            claimName: slskd-config
+        - name: slskd-downloads
+          persistentVolumeClaim:
+            claimName: slskd-downloads
+        - name: slskd-music
+          persistentVolumeClaim:
+            claimName: slskd-music
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: soulsync
+  namespace: slskd
+  labels:
+    app: soulsync
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: soulsync
+  template:
+    metadata:
+      labels:
+        app: soulsync
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
         - name: soulsync
-          image: boulderbadgedad/soulsync:2.8.3
+          image: boulderbadgedad/soulsync:3.1.3
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
@@ -133,7 +171,7 @@ spec:
               name: soulsync-ui
           env:
             - name: SLSKD_URL
-              value: "http://localhost:5030"
+              value: "http://slskd"
             - name: PYTHONPATH
               value: /app
             - name: SOULSYNC_CONFIG_PATH
@@ -177,14 +215,6 @@ spec:
               mountPath: /app/scripts
               subPath: scripts
       volumes:
-        - name: wg-secret
-          secret:
-            secretName: protonvpn-wg-conf
-        - name: wg-config
-          emptyDir: {}
-        - name: slskd-config
-          persistentVolumeClaim:
-            claimName: slskd-config
         - name: soulsync-config
           persistentVolumeClaim:
             claimName: soulsync-config

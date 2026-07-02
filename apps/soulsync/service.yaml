@@ -19,7 +19,7 @@ metadata:
   namespace: slskd
 spec:
   selector:
-    app: slskd
+    app: soulsync
   ports:
     - name: http
       port: 80

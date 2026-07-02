@@ -1,10 +1,10 @@
 # ----------------------------------------------------
-# Ingress only from Gateway API
+# Ingress for slskd (web UI)
 # ----------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: allow-ingress
+  name: slskd-allow-ingress
   namespace: slskd
 spec:
   endpointSelector:
@@ -17,12 +17,16 @@ spec:
         - ports:
             - port: "5030"
               protocol: TCP
-            - port: "8008"
+    - fromEndpoints:
+        - matchLabels:
+            app: soulsync
+      toPorts:
+        - ports:
+            - port: "5030"
               protocol: TCP
 ---
 # ----------------------------------------------------
-# VPN killswitch — only allow egress to ProtonVPN endpoint
-# All other internet traffic is blocked, forcing it through the tunnel
+# VPN killswitch for slskd — forces all egress through WireGuard
 # ----------------------------------------------------
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
@@ -40,6 +44,62 @@ spec:
         - ports:
             - port: "51820"
               protocol: UDP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+---
+# ----------------------------------------------------
+# Ingress for soulsync UI
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: soulsync-allow-ingress
+  namespace: slskd
+spec:
+  endpointSelector:
+    matchLabels:
+      app: soulsync
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8008"
+              protocol: TCP
+---
+# ----------------------------------------------------
+# Egress for soulsync — unrestricted, plus internal endpoints
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: soulsync-egress
+  namespace: slskd
+spec:
+  endpointSelector:
+    matchLabels:
+      app: soulsync
+  egress:
+    - toEntities:
+        - world
+    - toEndpoints:
+        - matchLabels:
+            app: slskd
+      toPorts:
+        - ports:
+            - port: "5030"
+              protocol: TCP
     - toEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: navidrome
