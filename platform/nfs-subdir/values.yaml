@@ -5,7 +5,6 @@ nfs-subdir-external-provisioner:
     mountOptions:
       - hard
       - noatime
-
   storageClass:
     create: true
     name: nfs-client
@@ -14,12 +13,10 @@ nfs-subdir-external-provisioner:
     reclaimPolicy: Delete
     archiveOnDelete: "true"
     pathPattern: "${.PVC.namespace}/${.PVC.name}"
-
   podSecurityContext:
     runAsNonRoot: true
     runAsUser: 65534
     fsGroup: 65534
-
   securityContext:
     allowPrivilegeEscalation: false
     capabilities:
