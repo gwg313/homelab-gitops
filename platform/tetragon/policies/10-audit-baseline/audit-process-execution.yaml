@@ -7,17 +7,15 @@ metadata:
     description: "Logs all process executions (sys_execve) for cluster-wide visibility."
 spec:
   kprobes:
-  - call: "sys_execve"
-    syscall: true
-    args:
-    - index: 0
-      type: "string"
-    - index: 1
-      type: "string_array"
-    selectors:
-    - matchPIDs:
-      - operator: NotIn
-        followForks: true
-        isNamespacePID: true
-        values:
-        - 1
+    - call: "sys_execve"
+      syscall: true
+      args:
+        - index: 0
+          type: "string"
+      selectors:
+        - matchPIDs:
+            - operator: NotIn
+              followForks: true
+              isNamespacePID: true
+              values:
+                - 1
