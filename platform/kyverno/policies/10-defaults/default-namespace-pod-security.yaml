@@ -1,0 +1,52 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: default-namespace-pod-security
+  annotations:
+    policies.kyverno.io/title: Default Namespace Pod Security Labels
+    policies.kyverno.io/category: Pod Security
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/description: >-
+      Labels every namespace with the Pod Security Admission baseline tier
+      (enforce) and restricted tier (audit/warn) unless a namespace already
+      sets its own pod-security.kubernetes.io/* labels, or is excluded as a
+      platform namespace that legitimately needs unrestricted access.
+
+spec:
+  background: true
+
+  rules:
+    - name: default-namespace-psa-labels
+
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - default
+                - kube-system
+                - kube-public
+                - kube-node-lease
+                - kyverno
+                - argocd
+                - cert-manager
+                - monitoring
+                - cilium-secrets
+                - cilium-ingress
+                - sealed-secrets
+                - tekton-pipelines
+                - tekton-pipelines-resolvers
+                - pipelines-as-code
+
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              +(pod-security.kubernetes.io/enforce): baseline
+              +(pod-security.kubernetes.io/audit): restricted
+              +(pod-security.kubernetes.io/warn): restricted

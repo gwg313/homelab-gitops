@@ -7,6 +7,7 @@ resources:
   - default-deployment-revision-history.yaml
   - default-drop-all-capabilities.yaml
   - default-job-ttl.yaml
+  - default-namespace-pod-security.yaml
   - default-run-as-non-root.yaml
   - default-seccomp-runtime-default.yaml
 
