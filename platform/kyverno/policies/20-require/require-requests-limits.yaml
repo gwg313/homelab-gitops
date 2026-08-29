@@ -26,18 +26,16 @@ spec:
                 - kube-system
                 - kube-public
                 - kube-node-lease
-                - argocd
-                - kyverno
                 - cilium-ingress
                 - cilium-secrets
-                - cert-manager
-                - sealed-secrets
-                - nfs-subdir-external-provisioner
-                - monitoring
-                - tekton-pipelines-resolvers
-                - tekton-pipelines
-                - pipelines-as-code
-                - cicd
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/platform-tier: "true"
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-no-resource-limits: "true"
       validate:
         message: "Resource discipline violation: Containers must declare cpu/memory requests and limits."
         pattern:

@@ -9,3 +9,4 @@ metadata:
     policy.home.arpa/allow-root: "true"
     policy.home.arpa/allow-latest-tag: "true"
     policy.home.arpa/allow-any-capabilities: "true"
+    policy.home.arpa/allow-no-resource-limits: "true"

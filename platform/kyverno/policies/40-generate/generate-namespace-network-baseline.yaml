@@ -31,16 +31,12 @@ spec:
                 - kube-system
                 - kube-public
                 - kube-node-lease
-                - kyverno
-                - argocd
-                - cert-manager
-                - monitoring
                 - cilium-secrets
                 - cilium-ingress
-                - sealed-secrets
-                - tekton-pipelines
-                - tekton-pipelines-resolvers
-                - pipelines-as-code
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/platform-tier: "true"
 
       generate:
         synchronize: true

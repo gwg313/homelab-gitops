@@ -23,6 +23,14 @@ patches:
         name: tekton-pipelines
         labels:
           policy.home.arpa/allow-hostpath: "true"
+          policy.home.arpa/platform-tier: "true"
+  - patch: |
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: tekton-pipelines-resolvers
+        labels:
+          policy.home.arpa/platform-tier: "true"
   - patch: |
       apiVersion: v1
       kind: Namespace
@@ -30,3 +38,4 @@ patches:
         name: pipelines-as-code
         labels:
           policy.home.arpa/allow-hostpath: "true"
+          policy.home.arpa/platform-tier: "true"
