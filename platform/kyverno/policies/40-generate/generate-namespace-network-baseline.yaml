@@ -33,7 +33,7 @@ spec:
                 - cilium-secrets
                 - cilium-ingress
           - resources:
-              namespaceSelector:
+              selector:
                 matchLabels:
                   policy.home.arpa/platform-tier: "true"
 

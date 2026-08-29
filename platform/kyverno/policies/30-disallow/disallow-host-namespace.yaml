@@ -17,6 +17,13 @@ spec:
                 - StatefulSet
                 - DaemonSet
 
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchLabels:
+                  policy.home.arpa/allow-host-namespace: "true"
+
       validate:
         message: "Host networking, PID, and IPC are not allowed."
         deny:

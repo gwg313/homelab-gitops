@@ -11,7 +11,11 @@ kube-prometheus-stack:
 
   alertmanager:
     enabled: true
-    
+
     alertmanagerSpec:
       useExistingSecret: true
       configSecret: alertmanager-custom-config
+
+  prometheus-node-exporter:
+    podLabels:
+      policy.home.arpa/allow-host-namespace: "true"
