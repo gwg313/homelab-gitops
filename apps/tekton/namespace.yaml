@@ -6,7 +6,3 @@ metadata:
     app.kubernetes.io/name: cicd
     app.kubernetes.io/part-of: tekton
     app.kubernetes.io/managed-by: argocd
-    policy.home.arpa/allow-root: "true"
-    policy.home.arpa/allow-latest-tag: "true"
-    policy.home.arpa/allow-any-capabilities: "true"
-    policy.home.arpa/allow-no-resource-limits: "true"

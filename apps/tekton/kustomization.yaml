@@ -14,8 +14,17 @@ resources:
   - tasks/kaniko.yaml
   - pac-network-policy.yaml
   - pac-role.yaml
+  - resource-limits.yaml
 
 patches:
+  - patch: |
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: config-defaults
+        namespace: tekton-pipelines
+      data:
+        default-timeout-minutes: "30"
   - patch: |
       apiVersion: v1
       kind: Namespace

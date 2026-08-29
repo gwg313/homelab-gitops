@@ -24,6 +24,10 @@ spec:
                 matchLabels:
                   security.policy/allow-root: "true"
           - resources:
+              selector:
+                matchLabels:
+                  tekton.dev/task: kaniko
+          - resources:
               namespaceSelector:
                 matchLabels:
                   policy.home.arpa/allow-root: "true"
@@ -47,6 +51,10 @@ spec:
               selector:
                 matchLabels:
                   security.policy/allow-root: "true"
+          - resources:
+              selector:
+                matchLabels:
+                  tekton.dev/task: kaniko
           - resources:
               namespaceSelector:
                 matchLabels:
