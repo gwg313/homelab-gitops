@@ -6,7 +6,7 @@ metadata:
   labels:
     app: slskd
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
@@ -136,7 +136,7 @@ metadata:
   labels:
     app: soulsync
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
