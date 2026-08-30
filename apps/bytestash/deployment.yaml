@@ -12,6 +12,7 @@ spec:
     metadata:
       labels:
         app: bytestash
+        security.policy/allow-root: "true"
       annotations:
         sidecar.istio.io/inject: "true"
     spec:
