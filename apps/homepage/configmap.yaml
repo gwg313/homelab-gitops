@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-config
+  namespace: homepage
+data:
+  settings.yaml: |
+    title: Homelab
+    theme: dark
+
+  services.yaml: |
+    - Media:
+        - Audiobookshelf:
+            href: https://audiobooks.gwg313.xyz
+            description: Audiobook and podcast server
+        - Navidrome:
+            href: https://music.gwg313.xyz
+            description: Music streaming server
+
+    - Productivity:
+        - Vikunja:
+            href: https://todo.gwg313.xyz
+            description: Task management
+        - Bytestash:
+            href: https://snippets.gwg313.xyz
+            description: Code snippet manager
+        - Yopass:
+            href: https://pastebin.gwg313.xyz
+            description: Secure secret sharing
+        - Stirling PDF:
+            href: https://pdftools.gwg313.xyz
+            description: PDF toolkit
+
+    - Dev / Infra:
+        - Forgejo:
+            href: https://git.gwg313.xyz
+            description: Self-hosted git
+        - Harbor:
+            href: https://registry.gwg313.xyz
+            description: Container registry
+
+  widgets.yaml: |
+    []
+
+  bookmarks.yaml: |
+    []
+
+  docker.yaml: |
+    {}
+
+  kubernetes.yaml: |
+    {}
