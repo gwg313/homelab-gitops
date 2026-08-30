@@ -1,0 +1,83 @@
+# Same reasoning as postgres-custom.yaml -- run directly instead of via the
+# chart's bundled StatefulSet, as the real non-root user from the start.
+#   uid 100 / gid 101 is rabbitmq:alpine's standard "rabbitmq" id.
+apiVersion: v1
+kind: Service
+metadata:
+  name: plane-rabbitmq-custom
+  namespace: plane
+spec:
+  clusterIP: None
+  selector:
+    app: plane-rabbitmq-custom
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: plane-rabbitmq-custom
+  namespace: plane
+spec:
+  serviceName: plane-rabbitmq-custom
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plane-rabbitmq-custom
+  template:
+    metadata:
+      labels:
+        app: plane-rabbitmq-custom
+    spec:
+      securityContext:
+        runAsUser: 100
+        runAsGroup: 101
+        runAsNonRoot: true
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.13.6-management-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 100
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: plane
+            - name: RABBITMQ_DEFAULT_PASS
+              value: "planeInternalMq2026"
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /var/lib/rabbitmq
+              name: data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: nfs-retain
+        resources:
+          requests:
+            storage: 500Mi

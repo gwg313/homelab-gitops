@@ -1,0 +1,89 @@
+# Plane's postgres, run directly instead of via the plane-ce chart's bundled
+# local_setup StatefulSet. postgres's own entrypoint starts as root, chowns
+# its data dir to the postgres user, then drops privileges -- standard for
+# this image, but our NFS storage (TrueNAS) always remaps every file it
+# creates to uid/gid 1000 on the server side, regardless of which uid the
+# client actually writes as (confirmed by inspecting the mounted volume
+# directly). Alpine's own "postgres" id (70) never matches what ends up on
+# disk, so postgres's own ownership check always fails. Running as 1000 --
+# the same uid every other app in this repo already uses against this same
+# NFS export -- matches what the server assigns either way.
+apiVersion: v1
+kind: Service
+metadata:
+  name: plane-pgdb-custom
+  namespace: plane
+spec:
+  clusterIP: None
+  selector:
+    app: plane-pgdb-custom
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: plane-pgdb-custom
+  namespace: plane
+spec:
+  serviceName: plane-pgdb-custom
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plane-pgdb-custom
+  template:
+    metadata:
+      labels:
+        app: plane-pgdb-custom
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgres
+          image: postgres:15.7-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/plane
+            - name: POSTGRES_USER
+              value: plane
+            - name: POSTGRES_PASSWORD
+              value: "planeInternalDb2026"
+            - name: POSTGRES_DB
+              value: plane
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: pgdata
+  volumeClaimTemplates:
+    - metadata:
+        name: pgdata
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: nfs-retain
+        resources:
+          requests:
+            storage: 5Gi

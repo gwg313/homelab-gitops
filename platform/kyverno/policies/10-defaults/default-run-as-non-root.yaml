@@ -14,6 +14,17 @@ spec:
               kinds:
                 - Pod
 
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchLabels:
+                  security.policy/allow-root: "true"
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-root: "true"
+
       mutate:
         patchStrategicMerge:
           spec:
@@ -26,6 +37,17 @@ spec:
           - resources:
               kinds:
                 - Pod
+
+      exclude:
+        any:
+          - resources:
+              selector:
+                matchLabels:
+                  security.policy/allow-root: "true"
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-root: "true"
 
       mutate:
         foreach:

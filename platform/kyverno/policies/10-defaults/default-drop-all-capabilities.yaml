@@ -13,6 +13,13 @@ spec:
               kinds:
                 - Pod
 
+      exclude:
+        any:
+          - resources:
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-any-capabilities: "true"
+
       mutate:
         foreach:
           - list: "request.object.spec.containers"

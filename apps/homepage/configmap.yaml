@@ -18,6 +18,9 @@ data:
             description: Music streaming server
 
     - Productivity:
+        - Plane:
+            href: https://pm.gwg313.xyz
+            description: Project management
         - Vikunja:
             href: https://todo.gwg313.xyz
             description: Task management
@@ -38,6 +41,9 @@ data:
         - Harbor:
             href: https://registry.gwg313.xyz
             description: Container registry
+        - IT Tools:
+            href: https://tools.gwg313.xyz
+            description: Handy developer utilities
 
   widgets.yaml: |
     []

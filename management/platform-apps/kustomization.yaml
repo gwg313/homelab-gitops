@@ -22,3 +22,5 @@ resources:
   - vikunja.yaml
   - argocd-config.yaml
   - homepage.yaml
+  - plane.yaml
+  - it-tools.yaml

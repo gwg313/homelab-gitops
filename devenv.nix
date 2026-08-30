@@ -4,7 +4,8 @@
   config,
   inputs,
   ...
-}: {
+}:
+{
   # https://devenv.sh/basics/
   env.GREET = "devenv";
   env = {
@@ -21,6 +22,7 @@
     gitleaks
     yamlfmt
     go-task
+    openssl
   ];
 
   # https://devenv.sh/languages/
@@ -63,7 +65,7 @@
     yamlfmt = {
       enable = true;
       entry = "yamlfmt";
-      args = ["-in-place"];
+      args = [ "-in-place" ];
       files = "\\.ya?ml$";
       language = "system";
     };

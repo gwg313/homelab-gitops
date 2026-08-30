@@ -1,0 +1,102 @@
+plane-ce:
+  planeVersion: v1.4.1
+
+  ingress:
+    enabled: false
+    appHost: "pm.gwg313.xyz"
+
+  ssl:
+    # TLS is terminated upstream by shared-edge-gateway, not by this chart.
+    externalTermination: true
+
+  # postgres/redis/rabbitmq run as our own plain manifests instead
+  # (apps/plane/templates/{postgres,redis,rabbitmq}-custom.yaml) -- the
+  # chart's bundled StatefulSets give no way to set securityContext, and
+  # they start as root then chown their data dir, which our NFS storage
+  # (TrueNAS Maproot) unconditionally rejects. See those files for details.
+  redis:
+    local_setup: false
+
+  postgres:
+    local_setup: false
+
+  rabbitmq:
+    local_setup: false
+    external_rabbitmq_url: "amqp://plane:planeInternalMq2026@plane-rabbitmq-custom.plane.svc.cluster.local:5672/"
+
+  minio:
+    local_setup: true
+    storageClass: nfs-retain
+    volumeSize: 10Gi
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image_mc: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+    init_image: busybox:1.37.0
+
+  web:
+    replicas: 1
+    cpuRequest: 50m
+    memoryRequest: 128Mi
+    cpuLimit: 500m
+    memoryLimit: 512Mi
+
+  space:
+    replicas: 1
+    cpuRequest: 50m
+    memoryRequest: 128Mi
+    cpuLimit: 500m
+    memoryLimit: 512Mi
+
+  admin:
+    replicas: 1
+    cpuRequest: 50m
+    memoryRequest: 128Mi
+    cpuLimit: 300m
+    memoryLimit: 256Mi
+
+  live:
+    replicas: 1
+    cpuRequest: 50m
+    memoryRequest: 128Mi
+    cpuLimit: 500m
+    memoryLimit: 512Mi
+
+  api:
+    replicas: 1
+    cpuRequest: 100m
+    memoryRequest: 256Mi
+    cpuLimit: 1000m
+    memoryLimit: 1Gi
+
+  worker:
+    replicas: 1
+    cpuRequest: 50m
+    memoryRequest: 128Mi
+    cpuLimit: 500m
+    memoryLimit: 512Mi
+
+  beatworker:
+    replicas: 1
+    cpuRequest: 50m
+    memoryRequest: 64Mi
+    cpuLimit: 200m
+    memoryLimit: 256Mi
+
+  env:
+    # Fail loudly instead of silently falling back to this chart's public
+    # example SECRET_KEY/LIVE_SERVER_SECRET_KEY if the sealed secret below
+    # is ever missing.
+    requireExplicitSecrets: true
+
+    pgdb_username: plane
+    pgdb_name: plane
+    pgdb_remote_url: "postgresql://plane:planeInternalDb2026@plane-pgdb-custom.plane.svc.cluster.local:5432/plane"
+    remote_redis_url: "redis://plane-redis-custom.plane.svc.cluster.local:6379/"
+
+    docstore_bucket: "uploads"
+    cors_allowed_origins: "https://pm.gwg313.xyz"
+
+  external_secrets:
+    # SECRET_KEY + LIVE_SERVER_SECRET_KEY. SECRET_KEY encrypts stored
+    # instance config (SMTP password, OAuth client secrets) -- must stay
+    # stable once set, never a placeholder.
+    app_keys_existingSecret: plane-app-keys

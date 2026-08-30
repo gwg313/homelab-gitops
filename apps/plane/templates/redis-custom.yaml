@@ -1,0 +1,73 @@
+# Same reasoning as postgres-custom.yaml -- run directly instead of via the
+# chart's bundled StatefulSet, as the real non-root user from the start.
+#   uid 999 / gid 1000 is valkey/valkey:alpine's standard "valkey" id.
+apiVersion: v1
+kind: Service
+metadata:
+  name: plane-redis-custom
+  namespace: plane
+spec:
+  clusterIP: None
+  selector:
+    app: plane-redis-custom
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: plane-redis-custom
+  namespace: plane
+spec:
+  serviceName: plane-redis-custom
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plane-redis-custom
+  template:
+    metadata:
+      labels:
+        app: plane-redis-custom
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redis
+          image: valkey/valkey:7.2.11-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 999
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /data
+              name: data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: nfs-retain
+        resources:
+          requests:
+            storage: 500Mi
