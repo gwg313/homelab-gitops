@@ -105,5 +105,7 @@ harbor:
       core:
         existingClaim: harbor-core
 
-  ingress:
-    enabled: false
+  expose:
+    type: clusterIP
+    tls:
+      enabled: false
