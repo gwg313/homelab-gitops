@@ -14,15 +14,22 @@ spec:
         app: stirling-pdf
     spec:
       securityContext:
-      runAsNonRoot: true
-      runAsUser: 1000
-      fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: stirling-pdf
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
             runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           image: docker.stirlingpdf.com/stirlingtools/stirling-pdf:2.11.0-fat
           resources:
             requests:

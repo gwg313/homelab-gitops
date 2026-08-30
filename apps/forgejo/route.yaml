@@ -5,7 +5,9 @@ metadata:
   namespace: forgejo
 spec:
   parentRefs:
-    - name: shared-edge-gateway
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: shared-edge-gateway
       namespace: cilium-ingress
   hostnames:
     - git.local.gwg313.xyz
@@ -17,8 +19,11 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: forgejo
+        - group: ""
+          kind: Service
+          name: forgejo
           port: 80
+          weight: 1
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
