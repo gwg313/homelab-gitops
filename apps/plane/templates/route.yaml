@@ -34,6 +34,30 @@ spec:
           port: 3000
           weight: 1
 
+    # The bare paths (no trailing slash) must be redirected by the gateway
+    # itself, not left to fall through to the admin/space backends. Those
+    # static nginx containers only know their own in-cluster port (3000), so
+    # if they end up issuing the directory-style redirect themselves, the
+    # Location header comes back as https://<host>:3000/god-mode/ instead of
+    # the real public URL. Upstream's own Caddy proxy does this same
+    # redirect at the edge (apps/proxy/Caddyfile.ce): `redir /god-mode
+    # /god-mode/ permanent`.
+    - matches:
+        - path: { type: Exact, value: "/god-mode" }
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path: { type: ReplaceFullPath, replaceFullPath: "/god-mode/" }
+            statusCode: 301
+
+    - matches:
+        - path: { type: Exact, value: "/spaces" }
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path: { type: ReplaceFullPath, replaceFullPath: "/spaces/" }
+            statusCode: 301
+
     - matches:
         - path: { type: PathPrefix, value: "/spaces" }
       backendRefs:
@@ -50,6 +74,21 @@ spec:
           kind: Service
           name: plane-admin
           port: 3000
+          weight: 1
+
+    # File uploads/downloads go straight to MinIO's S3 API under the bucket
+    # name (docstore_bucket in values.yaml -- "uploads"), same as upstream's
+    # Caddyfile: `reverse_proxy /{$BUCKET_NAME}/* plane-minio:9000`. Without
+    # this, presigned-URL PUTs (e.g. project cover images, asset uploads)
+    # fall through to the catch-all "/" rule below, land on plane-web's
+    # static nginx, and get "405 Not Allowed" since it only serves GET/HEAD.
+    - matches:
+        - path: { type: PathPrefix, value: "/uploads" }
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: plane-minio
+          port: 9000
           weight: 1
 
     - matches:
@@ -87,3 +126,6 @@ spec:
     - group: ""
       kind: Service
       name: plane-admin
+    - group: ""
+      kind: Service
+      name: plane-minio
