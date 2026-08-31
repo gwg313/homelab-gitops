@@ -1,0 +1,66 @@
+# No custom securityContext here -- karakeep's image runs s6-overlay
+# (ENTRYPOINT ["/init"]) and upstream's own Kubernetes example manifests
+# don't set one either. If this ends up needing to start as root and chown
+# /data, it will hit the same NFS (TrueNAS Maproot) rejection we already
+# saw with Plane's bundled postgres/redis/rabbitmq -- see
+# apps/plane/values.yaml. If it CrashLoops with a permission error on
+# startup, that's the first thing to check.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: karakeep-web
+  namespace: karakeep
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: karakeep-web
+  template:
+    metadata:
+      labels:
+        app: karakeep-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/karakeep-app/karakeep:v0.33.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: MEILI_ADDR
+              value: http://karakeep-meilisearch:7700
+            - name: BROWSER_WEB_URL
+              value: http://karakeep-chrome:9222
+            - name: DATA_DIR
+              value: /data
+            # Add OPENAI_API_KEY to the ConfigMap if AI tagging is wanted
+          envFrom:
+            - secretRef:
+                name: karakeep-secrets
+            - configMapRef:
+                name: karakeep-configuration
+          volumeMounts:
+            - mountPath: /data
+              name: data
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: karakeep-data

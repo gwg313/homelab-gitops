@@ -1,0 +1,67 @@
+# ----------------------------------------------------
+# Ingress only from Gateway API
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: karakeep
+spec:
+  endpointSelector:
+    matchLabels:
+      app: karakeep-web
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+---
+# ----------------------------------------------------
+# web <-> chrome <-> meilisearch talk freely within the namespace
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: intra-namespace-allow
+  namespace: karakeep
+spec:
+  endpointSelector: {}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: karakeep
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: karakeep
+---
+# ----------------------------------------------------
+# web (crawler/yt-dlp/monolith) and chrome (rendering) both fetch
+# arbitrary bookmarked URLs, so they need open outbound HTTP(S).
+# DNS egress to CoreDNS comes from the Kyverno-generated namespace
+# baseline (see platform/kyverno/policies/40-generate).
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: egress-world
+  namespace: karakeep
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - karakeep-web
+          - karakeep-chrome
+  egress:
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "80"
+              protocol: TCP
