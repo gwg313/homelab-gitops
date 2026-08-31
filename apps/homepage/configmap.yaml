@@ -30,6 +30,9 @@ data:
         - Yopass:
             href: https://pastebin.gwg313.xyz
             description: Secure secret sharing
+        - Karakeep:
+            href: https://bookmarks.gwg313.xyz
+            description: Bookmark manager
         - Stirling PDF:
             href: https://pdftools.gwg313.xyz
             description: PDF toolkit
@@ -49,6 +52,9 @@ data:
         - Homebox:
             href: https://inventory.gwg313.xyz
             description: Home inventory and asset management
+        - Mealie:
+            href: https://recipes.gwg313.xyz
+            description: Recipe manager and meal planner
 
   widgets.yaml: |
     []

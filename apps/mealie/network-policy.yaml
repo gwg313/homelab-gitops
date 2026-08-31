@@ -1,0 +1,34 @@
+# ----------------------------------------------------
+# Ingress only from Gateway API
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: mealie
+spec:
+  endpointSelector:
+    matchLabels:
+      app: mealie
+
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+
+  # Recipe-import-from-URL fetches arbitrary external sites, so (unlike
+  # homebox, which is ingress-only) this needs open HTTP(S) egress on top
+  # of the DNS-only egress the Kyverno-generated namespace baseline gives
+  # every namespace by default.
+  egress:
+    - toEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "80"
+              protocol: TCP
