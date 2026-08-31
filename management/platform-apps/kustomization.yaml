@@ -24,3 +24,4 @@ resources:
   - homepage.yaml
   - plane.yaml
   - it-tools.yaml
+  - homebox.yaml

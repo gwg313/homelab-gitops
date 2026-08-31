@@ -1,0 +1,20 @@
+# ----------------------------------------------------
+# Ingress only from Gateway API
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: homebox
+spec:
+  endpointSelector:
+    matchLabels:
+      app: homebox
+
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "7745"
+              protocol: TCP

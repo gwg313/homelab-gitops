@@ -45,6 +45,11 @@ data:
             href: https://tools.gwg313.xyz
             description: Handy developer utilities
 
+    - Home:
+        - Homebox:
+            href: https://inventory.gwg313.xyz
+            description: Home inventory and asset management
+
   widgets.yaml: |
     []
 

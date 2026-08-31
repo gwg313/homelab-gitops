@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homebox
+  namespace: argocd
+  annotations:
+    argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/gwg313/homelab-gitops.git
+    targetRevision: main
+    path: apps/homebox
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: homebox
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
