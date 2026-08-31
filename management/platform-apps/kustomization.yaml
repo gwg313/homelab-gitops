@@ -25,3 +25,5 @@ resources:
   - plane.yaml
   - it-tools.yaml
   - homebox.yaml
+  - mealie.yaml
+  - karakeep.yaml

@@ -39,6 +39,11 @@ spec:
 
       generate:
         synchronize: true
+        # Without this, the rule only fires on CREATE/UPDATE of a Namespace --
+        # namespaces that already existed before this policy was applied never
+        # get the baseline generated for them until something else happens to
+        # touch/update the Namespace object (e.g. an ArgoCD app resync).
+        generateExisting: true
 
         apiVersion: cilium.io/v2
         kind: CiliumNetworkPolicy

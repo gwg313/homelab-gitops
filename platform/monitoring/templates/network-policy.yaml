@@ -18,3 +18,15 @@ spec:
         - ports:
             - port: "3000"
               protocol: TCP
+
+    # Prometheus scrapes Grafana's own /metrics endpoint (self-monitoring).
+    # `monitoring` carries policy.home.arpa/platform-tier=true, so it's
+    # excluded from the Kyverno-generated namespace baseline and relies on
+    # explicit rules like this one instead.
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
