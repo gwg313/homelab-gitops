@@ -1,5 +1,7 @@
-# No custom securityContext -- see the note in web-deployment.yaml. Meili
-# also writes to its own mounted volume at startup.
+# meilisearch's image has no USER directive (root by default) but it's just
+# a static binary launched via tini -- no s6-overlay/privilege-drop logic,
+# so it doesn't care what UID it's started as as long as /meili_data is
+# writable. Same non-root pattern as homebox/mealie.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,9 +19,25 @@ spec:
       labels:
         app: karakeep-meilisearch
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: meilisearch
           image: getmeili/meilisearch:v1.41.0
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           env:
             - name: MEILI_NO_ANALYTICS
               value: "true"

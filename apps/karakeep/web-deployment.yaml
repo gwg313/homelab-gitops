@@ -1,10 +1,12 @@
-# No custom securityContext here -- karakeep's image runs s6-overlay
-# (ENTRYPOINT ["/init"]) and upstream's own Kubernetes example manifests
-# don't set one either. If this ends up needing to start as root and chown
-# /data, it will hit the same NFS (TrueNAS Maproot) rejection we already
-# saw with Plane's bundled postgres/redis/rabbitmq -- see
-# apps/plane/values.yaml. If it CrashLoops with a permission error on
-# startup, that's the first thing to check.
+# karakeep's web image has no USER directive and runs full s6-overlay
+# (ENTRYPOINT ["/init"]) to supervise DB migration + web + worker processes
+# -- there's no evidence (unlike karakeep-chrome, which ships USER
+# 65534:65534) that it supports running rootless. Rather than guess a UID
+# and risk a harder-to-diagnose s6-overlay failure, this uses the cluster's
+# documented escape hatch (security.policy/allow-root) from
+# platform/kyverno/policies/10-defaults/default-run-as-non-root.yaml and
+# 20-require/require-non-root.yaml, which otherwise force
+# runAsNonRoot=true on every pod.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,10 +23,11 @@ spec:
     metadata:
       labels:
         app: karakeep-web
+        security.policy/allow-root: "true"
     spec:
       containers:
         - name: web
-          image: ghcr.io/karakeep-app/karakeep:v0.33.2
+          image: ghcr.io/karakeep-app/karakeep:0.33.2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000

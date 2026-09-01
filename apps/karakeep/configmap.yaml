@@ -5,3 +5,7 @@ metadata:
   namespace: karakeep
 data:
   NEXTAUTH_URL: "https://bookmarks.gwg313.xyz"
+  # Sign up your own account first (it becomes admin automatically), then
+  # this locks out further public registration. New users after this point
+  # get created manually from Admin Settings > Users List > Create User.
+  DISABLE_SIGNUPS: "true"

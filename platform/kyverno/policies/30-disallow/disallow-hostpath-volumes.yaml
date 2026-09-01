@@ -18,9 +18,28 @@ spec:
                 matchLabels:
                   policy.home.arpa/allow-hostpath: "true"
 
+      # Not a pattern-style validate: the parenthesized conditional-anchor
+      # key this used to use (`- (hostPath): null`) gets silently stripped
+      # by CRD schema pruning once the ClusterPolicy is stored -- the live
+      # object ends up with `volumes: [{}]`, which means "at least one
+      # volume must exist" instead of "no volume may set hostPath": exactly
+      # backwards, and it blocks any brand-new Pod/Deployment with zero
+      # volumes (older resources were grandfathered in via
+      # allowExistingViolations, which is why this went unnoticed). foreach
+      # + deny.conditions avoids parenthesized keys entirely.
+      #
+      # The `|| ''` fallback matters: every pod gets an API-server-injected
+      # projected volume for its serviceaccount token, which has no
+      # `hostPath` key at all -- without the fallback, Kyverno's variable
+      # substitution errors out on the missing key instead of treating it
+      # as absent, and blocks every single pod in the cluster.
       validate:
         message: "hostPath volumes are not allowed (escape risk)."
-        pattern:
-          spec:
-            volumes:
-              - (hostPath): null
+        foreach:
+          - list: "request.object.spec.volumes"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.hostPath || '' }}"
+                    operator: NotEquals
+                    value: ""
