@@ -1,0 +1,42 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tuwunel
+  namespace: tuwunel
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: shared-edge-gateway
+      namespace: cilium-ingress
+
+  hostnames:
+    - "chat.gwg313.xyz"
+    - "chat.local.gwg313.xyz"
+    - "chat.zerotier.gwg313.xyz"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: tuwunel
+          port: 80
+          weight: 1
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-gateway-to-tuwunel
+  namespace: tuwunel
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: cilium-ingress
+  to:
+    - group: ""
+      kind: Service
+      name: tuwunel

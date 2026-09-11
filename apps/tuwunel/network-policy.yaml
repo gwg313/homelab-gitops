@@ -1,0 +1,24 @@
+# ----------------------------------------------------
+# Ingress only from Gateway API. Federation is disabled (allow_federation
+# = false in the deployment), so unlike a federating homeserver this needs
+# no inbound port 8448 and no broad outbound egress to the world -- clients
+# only ever talk to this server directly. DNS-only egress comes from the
+# Kyverno-generated namespace baseline.
+# ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-ingress
+  namespace: tuwunel
+spec:
+  endpointSelector:
+    matchLabels:
+      app: tuwunel
+
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8008"
+              protocol: TCP

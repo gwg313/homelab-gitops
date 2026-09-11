@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tuwunel
+  namespace: tuwunel
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tuwunel
+  template:
+    metadata:
+      labels:
+        app: tuwunel
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: tuwunel
+          image: ghcr.io/matrix-construct/tuwunel:v1.9.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: TZ
+              value: America/New_York
+            - name: TUWUNEL_SERVER_NAME
+              value: chat.gwg313.xyz
+            # Must be 0.0.0.0 in a container per tuwunel's own docs -
+            # 127.0.0.1/::1 (its non-container default) wouldn't be
+            # reachable from the Service.
+            - name: TUWUNEL_ADDRESS
+              value: "0.0.0.0"
+            - name: TUWUNEL_PORT
+              value: "8008"
+            # No federation: this server only talks to its own clients,
+            # never to other homeservers.
+            - name: TUWUNEL_ALLOW_FEDERATION
+              value: "false"
+            # Registration stays open but gated on TUWUNEL_REGISTRATION_TOKEN
+            # (from the sealed secret below) -- functions as an invite code:
+            # only people you hand the token to can create an account.
+            - name: TUWUNEL_ALLOW_REGISTRATION
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: tuwunel-secrets
+          ports:
+            - containerPort: 8008
+              name: http
+          readinessProbe:
+            exec:
+              command:
+                - tuwunel
+                - --health-check
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - tuwunel
+                - --health-check
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 15
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
+          volumeMounts:
+            - mountPath: /var/lib/tuwunel
+              name: data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: tuwunel-data
