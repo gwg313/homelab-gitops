@@ -1,0 +1,83 @@
+# One Argo CD Application per ci/projects/<name>/values.yaml, rendering the
+# ci-project chart plus any extra manifests (SealedSecrets) in that directory.
+# The `ci` AppProject keeps those apps inside ci-*/build-* namespaces and
+# a short list of kinds.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ci
+  namespace: argocd
+spec:
+  description: Per-project CI namespaces (ci/projects/*)
+  sourceRepos:
+    - https://github.com/gwg313/homelab-gitops.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: "ci-*"
+    - server: https://kubernetes.default.svc
+      namespace: "build-*"
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: ServiceAccount
+    - group: ""
+      kind: LimitRange
+    - group: ""
+      kind: ResourceQuota
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
+    - group: cilium.io
+      kind: CiliumNetworkPolicy
+    - group: pipelinesascode.tekton.dev
+      kind: Repository
+    - group: bitnami.com
+      kind: SealedSecret
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ci-projects
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/gwg313/homelab-gitops.git
+        revision: main
+        files:
+          - path: ci/projects/*/values.yaml
+  template:
+    metadata:
+      name: "ci-{{ .path.basename }}"
+      annotations:
+        argocd.argoproj.io/sync-wave: "2"
+    spec:
+      project: ci
+      sources:
+        - repoURL: https://github.com/gwg313/homelab-gitops.git
+          targetRevision: main
+          path: ci/charts/ci-project
+          helm:
+            releaseName: "{{ .path.basename }}"
+            valueFiles:
+              - "$values/{{ .path.path }}/values.yaml"
+        - repoURL: https://github.com/gwg313/homelab-gitops.git
+          targetRevision: main
+          ref: values
+        # SealedSecrets (PaC token, Harbor push secret) live next to values.yaml
+        - repoURL: https://github.com/gwg313/homelab-gitops.git
+          targetRevision: main
+          path: "{{ .path.path }}"
+          directory:
+            exclude: values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

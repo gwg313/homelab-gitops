@@ -1,0 +1,27 @@
+# Serving cert for the Shipwright conversion webhook. cainjector copies the CA
+# into the CRDs' conversion config (see the inject-ca-from patch).
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: shipwright-selfsigned
+  namespace: shipwright-build
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: shipwright-build-webhook-cert
+  namespace: shipwright-build
+spec:
+  secretName: shipwright-build-webhook-cert
+  duration: 8760h
+  renewBefore: 720h
+  dnsNames:
+    - shp-build-webhook
+    - shp-build-webhook.shipwright-build
+    - shp-build-webhook.shipwright-build.svc
+    - shp-build-webhook.shipwright-build.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: shipwright-selfsigned

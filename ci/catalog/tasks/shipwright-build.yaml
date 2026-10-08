@@ -1,0 +1,162 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: shipwright-build
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Build and push a container image by creating a Shipwright BuildRun in the
+    project's build namespace, waiting for it, and returning the pushed digest.
+    The TaskRun must use the project's `build-trigger` ServiceAccount (set via
+    taskRunSpecs in the PipelineRun); it may only create BuildRuns in its own
+    build-<project> namespace and never sees the push credentials.
+  params:
+    - name: build-namespace
+      description: Namespace the BuildRun runs in (build-<project>).
+    - name: git-url
+      description: Repository to build from.
+    - name: revision
+      description: Commit SHA (or ref) to build.
+    - name: image
+      description: Output image reference, e.g. harbor.example/project/app:sha.
+    - name: context-dir
+      default: "."
+    - name: dockerfile
+      default: Dockerfile
+    - name: strategy
+      description: ClusterBuildStrategy to use.
+      default: buildah-chroot
+    - name: push-secret
+      description: Registry credentials Secret in the build namespace.
+      default: harbor-push
+    - name: clone-secret
+      description: Optional git credentials Secret in the build namespace.
+      default: ""
+    - name: timeout
+      default: 30m
+  results:
+    - name: image-digest
+      description: Digest of the pushed image.
+    - name: image-url
+      description: Pushed image reference pinned by digest.
+    - name: buildrun-name
+      description: Name of the BuildRun that was created.
+  volumes:
+    - name: home
+      emptyDir: {}
+  steps:
+    - name: build
+      image: docker.io/alpine/kubectl:1.36.4@sha256:a2cd8ee034cbe04d651e565b3373299b31921de5c2af86490559e21b3e197808
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      volumeMounts:
+        - name: home
+          mountPath: /home/kubectl
+      # params go in via env so user-controlled values are never spliced into the script
+      env:
+        - name: HOME
+          value: /home/kubectl
+        - name: NS
+          value: $(params.build-namespace)
+        - name: GIT_URL
+          value: $(params.git-url)
+        - name: REVISION
+          value: $(params.revision)
+        - name: IMAGE
+          value: $(params.image)
+        - name: CONTEXT_DIR
+          value: $(params.context-dir)
+        - name: DOCKERFILE
+          value: $(params.dockerfile)
+        - name: STRATEGY
+          value: $(params.strategy)
+        - name: PUSH_SECRET
+          value: $(params.push-secret)
+        - name: CLONE_SECRET
+          value: $(params.clone-secret)
+        - name: TIMEOUT
+          value: $(params.timeout)
+        - name: PIPELINE_RUN
+          value: $(context.pipelineRun.name)
+      script: |
+        #!/bin/sh
+        set -eu
+
+        # values are spliced into YAML below; refuse anything that could break out of a quoted scalar
+        for v in "$NS" "$GIT_URL" "$REVISION" "$IMAGE" "$CONTEXT_DIR" "$DOCKERFILE" \
+                 "$STRATEGY" "$PUSH_SECRET" "$CLONE_SECRET" "$TIMEOUT" "$PIPELINE_RUN"; do
+          case "$v" in
+            *'"'*|*'\'*|*"
+        "*) echo "refusing parameter value with quote, backslash or newline" >&2; exit 1 ;;
+          esac
+        done
+
+        # image repository without tag (tag = ':' after the last '/')
+        repo="$IMAGE"
+        case "${repo##*/}" in *:*) repo="${repo%:*}" ;; esac
+
+        clone_secret=""
+        if [ -n "$CLONE_SECRET" ]; then
+          clone_secret="cloneSecret: \"$CLONE_SECRET\""
+        fi
+
+        name=$(kubectl create -o jsonpath='{.metadata.name}' -f - <<EOF
+        apiVersion: shipwright.io/v1beta1
+        kind: BuildRun
+        metadata:
+          generateName: build-
+          namespace: "$NS"
+          labels:
+            ci.home.arpa/pipelinerun: "$PIPELINE_RUN"
+        spec:
+          timeout: "$TIMEOUT"
+          # pre-linked to the push secret by the ci-project chart
+          serviceAccount: builder
+          build:
+            spec:
+              source:
+                type: Git
+                contextDir: "$CONTEXT_DIR"
+                git:
+                  url: "$GIT_URL"
+                  revision: "$REVISION"
+                  $clone_secret
+              strategy:
+                kind: ClusterBuildStrategy
+                name: "$STRATEGY"
+              paramValues:
+                - name: dockerfile
+                  value: "$DOCKERFILE"
+              output:
+                image: "$IMAGE"
+                pushSecret: "$PUSH_SECRET"
+        EOF
+        )
+        printf '%s' "$name" > "$(results.buildrun-name.path)"
+        echo "created BuildRun $NS/$name"
+
+        while :; do
+          status=$(kubectl -n "$NS" get buildrun "$name" \
+            -o jsonpath='{.status.conditions[?(@.type=="Succeeded")].status}')
+          case "$status" in
+            True) break ;;
+            False)
+              kubectl -n "$NS" get buildrun "$name" \
+                -o jsonpath='{.status.conditions[?(@.type=="Succeeded")].reason}: {.status.conditions[?(@.type=="Succeeded")].message}{"\n"}'
+              kubectl -n "$NS" logs -l "buildrun.shipwright.io/name=$name" \
+                --all-containers --prefix --tail=100 || true
+              exit 1
+              ;;
+          esac
+          sleep 10
+        done
+
+        digest=$(kubectl -n "$NS" get buildrun "$name" -o jsonpath='{.status.output.digest}')
+        printf '%s' "$digest" > "$(results.image-digest.path)"
+        printf '%s@%s' "$repo" "$digest" > "$(results.image-url.path)"
+        echo "pushed $repo@$digest"

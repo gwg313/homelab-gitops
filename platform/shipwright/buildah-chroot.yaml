@@ -1,0 +1,104 @@
+# Dockerfile builds with buildah, without privileged mode:
+# root in the container with the PSA-baseline capability set, no privilege
+# escalation, RuntimeDefault seccomp, read-only root fs, chroot isolation and
+# vfs storage. Build namespaces must allow root and extra capabilities
+# (policy.home.arpa/allow-root, policy.home.arpa/allow-any-capabilities).
+apiVersion: shipwright.io/v1beta1
+kind: ClusterBuildStrategy
+metadata:
+  name: buildah-chroot
+spec:
+  parameters:
+    - name: dockerfile
+      description: Path to the Dockerfile, relative to the context directory.
+      default: Dockerfile
+    - name: build-args
+      description: Build arguments as KEY=VALUE.
+      type: array
+      defaults: []
+    - name: target
+      description: Target stage of a multi-stage Dockerfile.
+      default: ""
+  volumes:
+    - name: buildah-storage
+      overridable: false
+      emptyDir: {}
+    - name: buildah-tmp
+      overridable: false
+      emptyDir: {}
+  steps:
+    - name: build-and-push
+      image: quay.io/containers/buildah:v1.43.2@sha256:8356af46e4b8b77d6b18d3607153a00b55f0352cb0a049da28ec563789c4554c
+      workingDir: $(params.shp-source-context)
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop: [ALL]
+          add:
+            - CHOWN
+            - DAC_OVERRIDE
+            - FOWNER
+            - FSETID
+            - KILL
+            - NET_BIND_SERVICE
+            - SETFCAP
+            - SETGID
+            - SETPCAP
+            - SETUID
+            - SYS_CHROOT
+      volumeMounts:
+        - name: buildah-storage
+          mountPath: /var/lib/containers
+        - name: buildah-tmp
+          mountPath: /tmp
+      env:
+        - name: TMPDIR
+          value: /tmp
+        - name: HOME
+          value: /tmp
+        - name: DOCKERFILE
+          value: $(params.dockerfile)
+        - name: TARGET
+          value: $(params.target)
+        - name: IMAGE
+          value: $(params.shp-output-image)
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "2"
+          memory: 4Gi
+      command: [/bin/bash]
+      args:
+        - -c
+        - |
+          set -euo pipefail
+          # Tekton materialises the push secret linked to the builder ServiceAccount
+          # as a docker config; its location depends on the Tekton/HOME setup
+          for f in "$HOME/.docker/config.json" /tekton/creds/.docker/config.json /tekton/home/.docker/config.json; do
+            if [ -f "$f" ]; then export REGISTRY_AUTH_FILE="$f"; break; fi
+          done
+          build_args=()
+          for a in "$@"; do build_args+=(--build-arg "$a"); done
+          [ -n "$TARGET" ] && build_args+=(--target "$TARGET")
+          if [ ! -f "$DOCKERFILE" ]; then
+            echo "Dockerfile '$DOCKERFILE' not found"
+            printf DockerfileNotFound > '$(results.shp-error-reason.path)'
+            printf "Dockerfile '%s' not found" "$DOCKERFILE" > '$(results.shp-error-message.path)'
+            exit 1
+          fi
+          # explicit --storage-driver: the env var alone still touches the image's
+          # read-only additional store under /usr/lib/containers
+          buildah --storage-driver=vfs bud --isolation=chroot "${build_args[@]}" \
+            --file "$DOCKERFILE" --tag "$IMAGE" .
+          buildah --storage-driver=vfs push --digestfile '$(results.shp-image-digest.path)' \
+            "$IMAGE" "docker://$IMAGE"
+        - --
+        - $(params.build-args[*])

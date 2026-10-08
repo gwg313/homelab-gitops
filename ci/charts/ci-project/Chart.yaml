@@ -1,0 +1,8 @@
+apiVersion: v2
+name: ci-project
+description: >-
+  Per-project CI namespaces for Tekton Pipelines-as-Code + Shipwright:
+  ci-<name> runs PipelineRuns, build-<name> runs image builds and holds the
+  registry push credentials.
+type: application
+version: 0.1.0

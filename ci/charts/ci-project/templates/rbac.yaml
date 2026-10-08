@@ -1,0 +1,33 @@
+{{- if .Values.build.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: build-trigger
+  namespace: {{ include "ci-project.buildNamespace" . }}
+  labels:
+    {{- include "ci-project.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [shipwright.io]
+    resources: [buildruns]
+    verbs: [create, get, list, watch]
+  # build logs on failure; no access to secrets
+  - apiGroups: [""]
+    resources: [pods, pods/log]
+    verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: build-trigger
+  namespace: {{ include "ci-project.buildNamespace" . }}
+  labels:
+    {{- include "ci-project.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: build-trigger
+subjects:
+  - kind: ServiceAccount
+    name: build-trigger
+    namespace: {{ include "ci-project.ciNamespace" . }}
+{{- end }}

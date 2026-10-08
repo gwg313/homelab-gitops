@@ -15,6 +15,10 @@ resources:
   - yopass.yaml
   - tekton.yaml
   - homelab-gitops.yaml
+  - ci-catalog.yaml
+  - shipwright.yaml
+  - ci-projects.yaml
+  - argocd-image-updater.yaml
   - navidrome.yaml
   - bytestash.yaml
   - stirling-pdf.yaml

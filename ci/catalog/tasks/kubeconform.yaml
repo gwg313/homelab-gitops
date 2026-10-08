@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: kubeconform
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Validate Kubernetes manifests in the source workspace with kubeconform.
+    Helm chart metadata, values files and templates are skipped. Needs egress
+    to raw.githubusercontent.com for schemas.
+  workspaces:
+    - name: source
+  params:
+    - name: exclude-names
+      type: string
+      description: Space-separated file names to skip in addition to Chart.yaml and values*.yaml.
+      default: ""
+  steps:
+    - name: kubeconform
+      image: ghcr.io/yannh/kubeconform:v0.8.0-alpine@sha256:6b90a5f23d846140ce0194fe050b1995e546eba938f3a6bf10c039dd5e24588f
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      env:
+        - name: EXCLUDE_NAMES
+          value: $(params.exclude-names)
+      script: |
+        #!/bin/sh
+        set -e
+        SCHEMA='https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{.ResourceKind}}-{{.ResourceAPIVersion}}.json'
+        set -- \( -path ./.git -o -path '*/templates' \) -prune -o -type f \
+          \( -name '*.yaml' -o -name '*.yml' \) ! -name Chart.yaml ! -name 'values*.yaml'
+        for n in $EXCLUDE_NAMES; do set -- "$@" ! -name "$n"; done
+        find . "$@" -print | xargs /kubeconform \
+          -strict \
+          -summary \
+          -ignore-missing-schemas \
+          -schema-location "$SCHEMA" \
+          -schema-location default

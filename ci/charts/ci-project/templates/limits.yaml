@@ -1,0 +1,37 @@
+{{- $namespaces := dict "ci" (include "ci-project.ciNamespace" .) -}}
+{{- if .Values.build.enabled -}}
+{{- $_ := set $namespaces "build" (include "ci-project.buildNamespace" .) -}}
+{{- end -}}
+{{- range $role, $ns := $namespaces }}
+{{- $res := index $.Values.resources $role }}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ $role }}-limits
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ci-project.labels" $ | nindent 4 }}
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      default:
+        cpu: 500m
+        memory: 512Mi
+      max:
+        {{- toYaml $res.max | nindent 8 }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ $role }}-quota
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ci-project.labels" $ | nindent 4 }}
+spec:
+  hard:
+    {{- toYaml $res.quota | nindent 4 }}
+{{- end }}

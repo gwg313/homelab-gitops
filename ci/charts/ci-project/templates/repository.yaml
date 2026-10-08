@@ -1,0 +1,25 @@
+apiVersion: pipelinesascode.tekton.dev/v1alpha1
+kind: Repository
+metadata:
+  name: {{ include "ci-project.name" . }}
+  namespace: {{ include "ci-project.ciNamespace" . }}
+  labels:
+    {{- include "ci-project.labels" . | nindent 4 }}
+spec:
+  url: {{ required "repository.url is required" .Values.repository.url | quote }}
+  git_provider:
+    {{- if eq .Values.repository.provider "forgejo" }}
+    type: gitea
+    url: {{ .Values.repository.forgejoUrl | quote }}
+    {{- else }}
+    type: github
+    {{- end }}
+    secret:
+      name: {{ .Values.repository.secretName }}
+      key: token
+    webhook_secret:
+      name: {{ .Values.repository.secretName }}
+      key: webhook-secret
+  settings:
+    # read .tekton/ from the default branch, never from the PR head
+    pipelinerun_provenance: default_branch

@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/gwg313/homelab-gitops.git
     targetRevision: main
-    path: apps/tekton
+    path: platform/tekton
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:

@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ci-catalog
+  namespace: argocd
+  annotations:
+    # after tekton-pipelines (Task CRD)
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/gwg313/homelab-gitops.git
+    targetRevision: main
+    path: ci/catalog
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tekton-catalog
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

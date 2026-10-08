@@ -1,0 +1,14 @@
+# Original single-namespace CI setup. Kept running until homelab-gitops moves
+# to ci/projects/, then this whole directory goes.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - tekton-runner-role.yaml
+  - tekton-runner-binding.yaml
+  - network-policy.yaml
+  - git-clone-task.yaml
+  - pac-role.yaml
+  - resource-limits.yaml

@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: yamllint
+  namespace: tekton-catalog
+spec:
+  description: Lint YAML files in the source workspace with yamllint.
+  workspaces:
+    - name: source
+  params:
+    - name: args
+      type: array
+      description: Arguments passed to yamllint (paths, -c config, ...).
+      default: ["."]
+  steps:
+    - name: yamllint
+      image: docker.io/pipelinecomponents/yamllint:0.35.13@sha256:5ab5eb7da0ed5e606b07c1723fc8b275e925189f70ac259b26b7329cb5f8f44d
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      command: [yamllint]
+      args: ["$(params.args[*])"]

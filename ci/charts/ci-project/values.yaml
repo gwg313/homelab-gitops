@@ -1,0 +1,48 @@
+# Short project name; creates namespaces ci-<name> and build-<name>.
+name: ""
+
+repository:
+  # Repository URL as the git provider reports it in webhooks.
+  url: ""
+  # github | forgejo
+  provider: forgejo
+  # In-cluster API URL, used when provider is forgejo.
+  forgejoUrl: http://forgejo.forgejo.svc.cluster.local
+  # Secret in ci-<name> with keys `token` and `webhook-secret`
+  # (ship it as a SealedSecret from the project directory).
+  secretName: pac-git-token
+
+build:
+  enabled: true
+  # kubernetes.io/dockerconfigjson Secret in build-<name> (Harbor robot account).
+  pushSecret: harbor-push
+  # Optional git credentials Secret in build-<name> for private repositories.
+  cloneSecret: ""
+  # Registry hostname images are pushed to (via the shared gateway).
+  registryHost: registry.gwg313.xyz
+
+# Extra FQDNs (port 443) that pipeline and build pods may reach,
+# e.g. package registries. Prefer a Harbor proxy-cache instead.
+egressFQDNs: []
+
+resources:
+  ci:
+    quota:
+      requests.cpu: "2"
+      requests.memory: 4Gi
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      pods: "10"
+    max:
+      cpu: "2"
+      memory: 2Gi
+  build:
+    quota:
+      requests.cpu: "2"
+      requests.memory: 4Gi
+      limits.cpu: "4"
+      limits.memory: 8Gi
+      pods: "4"
+    max:
+      cpu: "2"
+      memory: 4Gi

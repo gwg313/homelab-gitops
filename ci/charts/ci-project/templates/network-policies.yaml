@@ -1,0 +1,66 @@
+# DNS comes from the Kyverno-generated baseline-network-security policy.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: pipeline-egress
+  namespace: {{ include "ci-project.ciNamespace" . }}
+  labels:
+    {{- include "ci-project.labels" . | nindent 4 }}
+spec:
+  endpointSelector: {}
+  egress:
+    {{- include "ci-project.gitEgress" . | nindent 4 }}
+    # kubeconform schemas
+    - toFQDNs:
+        - matchName: raw.githubusercontent.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+{{- if .Values.build.enabled }}
+---
+# Only the build-trigger SA talks to the API server (to create BuildRuns).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: build-trigger-apiserver
+  namespace: {{ include "ci-project.ciNamespace" . }}
+  labels:
+    {{- include "ci-project.labels" . | nindent 4 }}
+spec:
+  endpointSelector:
+    matchLabels:
+      io.cilium.k8s.policy.serviceaccount: build-trigger
+  egress:
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "6443"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: build-egress
+  namespace: {{ include "ci-project.buildNamespace" . }}
+  labels:
+    {{- include "ci-project.labels" . | nindent 4 }}
+spec:
+  endpointSelector: {}
+  egress:
+    {{- include "ci-project.gitEgress" . | nindent 4 }}
+    # Harbor (push, base image pulls via proxy-cache) through the shared gateway
+    - toEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+    - toFQDNs:
+        - matchName: {{ .Values.build.registryHost | quote }}
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+{{- end }}

@@ -21,6 +21,3 @@ subjects:
   - kind: ServiceAccount
     name: pipelines-as-code-controller
     namespace: pipelines-as-code
-  - kind: ServiceAccount
-    name: tekton-pipelines-resolvers
-    namespace: tekton-pipelines

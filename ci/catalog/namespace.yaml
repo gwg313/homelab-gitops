@@ -1,0 +1,8 @@
+# Shared Tasks only; nothing runs here. Projects reference these with the
+# cluster resolver, which is restricted to this namespace (see platform/tekton).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tekton-catalog
+  labels:
+    app.kubernetes.io/part-of: tekton
