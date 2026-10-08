@@ -15,15 +15,6 @@ spec:
       exclude:
         any:
           - resources:
-              selector:
-                matchExpressions:
-                  - key: app.kubernetes.io/managed-by
-                    operator: In
-                    values:
-                      - tekton-pipelines
-                  - key: tekton.dev/task
-                    operator: Exists
-          - resources:
               namespaceSelector:
                 matchLabels:
                   policy.home.arpa/allow-latest-tag: "true"

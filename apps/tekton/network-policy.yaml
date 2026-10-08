@@ -5,14 +5,9 @@ metadata:
   namespace: cicd
 spec:
   endpointSelector: {}
+  # DNS (incl. the L7 rule toFQDNs needs) comes from the Kyverno-generated
+  # baseline-network-security policy in every namespace
   egress:
-    # Tekton entrypoint sidecar updates TaskRun status via the K8s API
-    - toEntities:
-        - kube-apiserver
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
     # Push built images to Harbor registry in-cluster
     - toEndpoints:
         - matchLabels:
@@ -31,6 +26,10 @@ spec:
         - ports:
             - port: "3000"
               protocol: TCP
-    # Tool downloads (kubeconform), schema lookups
-    - toEntities:
-        - world
+    # kubeconform schema lookups
+    - toFQDNs:
+        - matchName: raw.githubusercontent.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

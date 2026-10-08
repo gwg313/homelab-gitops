@@ -38,6 +38,7 @@ tasks:
 
   validate:
     desc: Validate Kubernetes manifests with kubeconform
+    # yamllint disable rule:line-length
     cmd: |
       git ls-files '*.yaml' '*.yml' | xargs kubeconform \
         -strict \
@@ -46,6 +47,7 @@ tasks:
         -schema-location '{{`{{.ResourceKind}}`}}-{{`{{.ResourceAPIVersion}}`}}.json' \
         -schema-location 'https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{`{{.ResourceKind}}`}}-{{`{{.ResourceAPIVersion}}`}}.json' \
         -schema-location default
+    # yamllint enable rule:line-length
 
   secrets:
     desc: Scan for leaked secrets with gitleaks

@@ -13,3 +13,6 @@ spec:
     webhook_secret:
       name: pac-forgejo-token
       key: webhook-secret
+  settings:
+    # read .tekton/ from the default branch, never from the PR head
+    pipelinerun_provenance: default_branch

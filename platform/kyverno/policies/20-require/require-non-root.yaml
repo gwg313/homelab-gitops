@@ -19,14 +19,15 @@ spec:
                 - Pod
       exclude:
         any:
+          # pod-level opt-out only honoured in namespaces opted in via GitOps,
+          # so workloads (e.g. CI pipelines) can't exempt themselves
           - resources:
               selector:
                 matchLabels:
                   security.policy/allow-root: "true"
-          - resources:
-              selector:
+              namespaceSelector:
                 matchLabels:
-                  tekton.dev/task: kaniko
+                  policy.home.arpa/allow-root-optin: "true"
           - resources:
               namespaceSelector:
                 matchLabels:
@@ -47,14 +48,15 @@ spec:
                 - Pod
       exclude:
         any:
+          # pod-level opt-out only honoured in namespaces opted in via GitOps,
+          # so workloads (e.g. CI pipelines) can't exempt themselves
           - resources:
               selector:
                 matchLabels:
                   security.policy/allow-root: "true"
-          - resources:
-              selector:
+              namespaceSelector:
                 matchLabels:
-                  tekton.dev/task: kaniko
+                  policy.home.arpa/allow-root-optin: "true"
           - resources:
               namespaceSelector:
                 matchLabels:

@@ -2,7 +2,7 @@ harbor:
   externalURL: https://registry.gwg313.xyz
   updateStrategy:
     type: Recreate
-  
+
   nginx:
     replicas: 0
     resources:

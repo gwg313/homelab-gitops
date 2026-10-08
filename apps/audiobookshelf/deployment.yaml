@@ -34,7 +34,7 @@ spec:
           env:
             - name: TZ
               value: "America/Toronto"
-          
+
           resources:
             requests:
               cpu: 100m

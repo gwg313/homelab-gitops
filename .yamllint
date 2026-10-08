@@ -9,6 +9,12 @@ rules:
   comments:
     min-spaces-from-content: 1
   comments-indentation: disable
+  # allow both indented and flush block sequences, as long as each file is consistent
+  indentation:
+    spaces: consistent
+    indent-sequences: consistent
 
 ignore: |
   **/*sealed*.yaml
+  # Helm templates aren't valid YAML until rendered
+  **/templates/**

@@ -6,7 +6,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "0"
     policies.kyverno.io/title: Enforce Resource Requests and Limits
     policies.kyverno.io/description: >-
-      Guarantees cluster stability by requiring all application containers 
+      Guarantees cluster stability by requiring all application containers
       to explicitly declare CPU and Memory requests and limits.
 spec:
   validationFailureAction: Enforce

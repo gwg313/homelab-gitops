@@ -1,6 +1,6 @@
 tetragon:
   enabled: true
-  
+
   export:
     enabled: true
 

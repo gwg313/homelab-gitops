@@ -16,10 +16,14 @@ spec:
 
       exclude:
         any:
+          # pod-level opt-out only honoured in namespaces opted in via GitOps
           - resources:
               selector:
                 matchLabels:
                   security.policy/allow-root: "true"
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-root-optin: "true"
           - resources:
               namespaceSelector:
                 matchLabels:
@@ -40,10 +44,14 @@ spec:
 
       exclude:
         any:
+          # pod-level opt-out only honoured in namespaces opted in via GitOps
           - resources:
               selector:
                 matchLabels:
                   security.policy/allow-root: "true"
+              namespaceSelector:
+                matchLabels:
+                  policy.home.arpa/allow-root-optin: "true"
           - resources:
               namespaceSelector:
                 matchLabels:
