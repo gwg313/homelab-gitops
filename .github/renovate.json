@@ -2,7 +2,6 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "schedule": ["before 6am on monday"],
-  "ignorePaths": ["apps_bak/**", "apps_temp/**"],
   "kubernetes": {
     "fileMatch": ["apps/.+\\.ya?ml$", "platform/.+\\.ya?ml$"]
   },

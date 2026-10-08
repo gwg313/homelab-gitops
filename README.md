@@ -25,39 +25,24 @@ Core components:
 ## Repository Structure
 
 ```
-├── apps/
-├── audiobookshelf/
-├── bytestash/
-├── cert-manager/
-├── cluster-issuer/
-├── focalboard/
-├── forgejo/
-├── harbor-config/
-├── hedgedoc/
-├── karakeep/
-├── linkwarden/
-├── metallb/
-├── minio/
-├── navidrome/
-├── sealed-secrets/
-├── security/
-├── stirling-pdf/
-├── woodpecker/
-├── yopass/
-└── root-app.yaml
+├── bootstrap/
+│   └── root-app-of-apps.yaml   # parent ArgoCD application, applied once by hand
+├── management/
+│   └── platform-apps/          # one ArgoCD Application per platform component / app
+├── platform/                   # cluster platform: argocd, cert-manager, kyverno, monitoring, ...
+├── apps/                       # self-hosted applications and Tekton CI
+└── .tekton/                    # Pipelines-as-Code pipeline for this repository
 ```
 
 Each application directory contains the manifests or Helm values required to deploy the service.
-
-`root-app.yaml` bootstraps all applications via ArgoCD.
 
 ---
 
 ## GitOps Structure
 
-- `root-app.yaml` defines the parent ArgoCD application.
-- Child applications are defined under `apps/`.
-- Infrastructure components and services are separated by directory.
+- `bootstrap/root-app-of-apps.yaml` defines the parent ArgoCD application (`task bootstrap`).
+- It syncs `management/platform-apps/`, which defines a child Application per component.
+- Child Applications point at directories under `platform/` and `apps/`.
 - The repository represents the desired state of the cluster.
 
 ---
