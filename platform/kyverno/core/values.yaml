@@ -27,6 +27,13 @@ kyverno:
       limits:
         memory: 256Mi
 
+  # Its informers cache every resource kind the TTL/cleanup policies touch;
+  # the 128Mi chart default OOMs on this cluster.
+  cleanupController:
+    resources:
+      limits:
+        memory: 256Mi
+
   admissionController:
     replicas: 2
     features:
