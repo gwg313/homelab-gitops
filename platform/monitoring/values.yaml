@@ -93,6 +93,11 @@ kube-prometheus-stack:
         {{ end }}
         {{- end }}
 
+  # Cilium replaces kube-proxy, so there is nothing to scrape and
+  # KubeProxyDown would fire forever.
+  kubeProxy:
+    enabled: false
+
   prometheus:
     prometheusSpec:
       # Without explicit resources the Kyverno defaults (200m / 512Mi) applied,
