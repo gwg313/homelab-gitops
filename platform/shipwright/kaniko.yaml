@@ -10,6 +10,10 @@
 # kaniko writes an image tarball; Shipwright's image-processing step pushes it
 # with the build's push secret (the same path the ko strategy uses).
 #
+# Docker Hub base images come through Harbor's `dockerhub` proxy-cache project
+# (--registry-map), so build namespaces need no Docker Hub egress. Dockerfiles
+# keep their plain docker.io references.
+#
 # gcr.io/kaniko-project was archived in 2025; osscontainertools/kaniko is the
 # maintained fork. The -debug variant ships the busybox shell used below.
 apiVersion: shipwright.io/v1beta1
@@ -109,6 +113,7 @@ spec:
             --tar-path="$OUTPUT_DIR/image.tar" \
             --snapshot-mode=redo \
             --ignore-path=/product_uuid \
+            --registry-map=index.docker.io=registry.gwg313.xyz/dockerhub \
             "$@"
         - --
         - $(params.build-args[*])

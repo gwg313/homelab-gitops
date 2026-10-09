@@ -15,12 +15,7 @@ build:
   # robot with push rights on the public Harbor project "zmk"
   pushSecret: harbor-push
 
-# image build only: base image from Docker Hub, west update from GitHub
+# image build only: west update from GitHub (the Docker Hub base image comes
+# through Harbor's dockerhub proxy cache)
 egressFQDNs:
   - github.com
-  - index.docker.io
-  - registry-1.docker.io
-  - auth.docker.io
-  # Cilium's "*" matches one DNS label, so the cloudfront host is listed too
-  - "*.docker.com"
-  - production.cloudfront.docker.com

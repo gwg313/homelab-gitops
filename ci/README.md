@@ -129,8 +129,9 @@ own CI is `ci/projects/homelab-gitops` + `.tekton/ci.yaml`.
 
 ## Not done yet / verify on first use
 
-- Harbor proxy-cache project for Docker Hub/ghcr (Harbor UI), so builds and
-  base-image pulls don't need internet egress.
+- Harbor proxy-cache projects for ghcr.io/quay.io. Docker Hub is done: the
+  `dockerhub` project (Harbor UI), kaniko's `--registry-map`, and a Talos
+  registry mirror on every node.
 - `harbor-image-updater` pull secret in `argocd`, and git write-back
   credentials for Image Updater.
 - Whether the gateway is reached via the `ingress` entity or the registry
