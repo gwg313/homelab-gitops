@@ -13,3 +13,4 @@ resources:
   - tasks/go/go-test.yaml
   - tasks/go/golangci-lint.yaml
   - tasks/go/govulncheck.yaml
+  - tasks/node/pnpm.yaml

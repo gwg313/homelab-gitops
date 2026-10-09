@@ -1,0 +1,96 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: pnpm
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Install a pnpm project's dependencies (frozen lockfile) and run package.json
+    scripts in order, e.g. lint, typecheck, test. The project is copied to a
+    pod-local volume first, so node_modules never touches the workspace volume.
+    Needs egress to registry.npmjs.org.
+  workspaces:
+    - name: source
+  params:
+    - name: package-dir
+      type: string
+      description: Directory containing package.json, relative to the workspace.
+      default: "."
+    - name: scripts
+      type: array
+      description: package.json scripts to run, in order. The task fails on the first failing one.
+      default: ["lint", "test"]
+    - name: pnpm-version
+      type: string
+      description: >-
+        pnpm version to install. Empty uses the packageManager field of
+        package.json (e.g. "pnpm@11.28.5").
+      default: ""
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: pnpm
+      image: docker.io/library/node:24.21.0-trixie-slim@sha256:173f125896c3b47ddf056734c7ea789d04595a6a08769a8f78e0df642781fb66
+      workingDir: $(workspaces.source.path)/$(params.package-dir)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "2"
+          memory: 3Gi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: HOME
+          value: /tmp
+        - name: npm_config_cache
+          value: /tmp/npm-cache
+        - name: npm_config_prefix
+          value: /tmp/npm-global
+        - name: npm_config_update_notifier
+          value: "false"
+        - name: CI
+          value: "true"
+        - name: NEXT_TELEMETRY_DISABLED
+          value: "1"
+        - name: PNPM_VERSION
+          value: $(params.pnpm-version)
+      args: ["$(params.scripts[*])"]
+      script: |
+        #!/bin/sh
+        set -eu
+        node --version
+
+        version=$PNPM_VERSION
+        if [ -z "$version" ]; then
+          version=$(node -p 'const p=require("./package.json").packageManager||""; p.startsWith("pnpm@") ? p.slice(5).split("+")[0] : ""')
+        fi
+        if [ -z "$version" ]; then
+          echo "no pnpm version: set the pnpm-version param or packageManager in package.json" >&2
+          exit 1
+        fi
+        npm install --global --no-fund --no-audit "pnpm@$version"
+        export PATH="/tmp/npm-global/bin:$PATH"
+        pnpm --version
+
+        # node_modules holds tens of thousands of files; keep them on the
+        # pod-local volume instead of the (network) workspace volume
+        mkdir -p /tmp/work
+        cp -a . /tmp/work
+        cd /tmp/work
+        pnpm install --frozen-lockfile --store-dir /tmp/pnpm-store
+
+        for script in "$@"; do
+          echo "::: pnpm run $script"
+          pnpm run "$script"
+        done
