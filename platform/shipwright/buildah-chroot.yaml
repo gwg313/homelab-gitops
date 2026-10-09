@@ -34,7 +34,10 @@ spec:
   steps:
     - name: build-and-push
       image: quay.io/containers/buildah:v1.43.2@sha256:8356af46e4b8b77d6b18d3607153a00b55f0352cb0a049da28ec563789c4554c
-      workingDir: $(params.shp-source-context)
+      # source root, not the context: Tekton pre-creates a step's workingDir,
+      # and a subdirectory inside the empty source volume makes the git clone
+      # fail with "destination path ... is not an empty directory"
+      workingDir: $(params.shp-source-root)
       securityContext:
         runAsUser: 0
         runAsGroup: 0
@@ -73,6 +76,8 @@ spec:
           value: $(params.target)
         - name: IMAGE
           value: $(params.shp-output-image)
+        - name: CONTEXT
+          value: $(params.shp-source-context)
       resources:
         requests:
           cpu: 500m
@@ -85,6 +90,7 @@ spec:
         - -c
         - |
           set -euo pipefail
+          cd "$CONTEXT"
           # Tekton materialises the push secret linked to the builder ServiceAccount
           # as a docker config; its location depends on the Tekton/HOME setup
           for f in "$HOME/.docker/config.json" /tekton/creds/.docker/config.json /tekton/home/.docker/config.json; do
