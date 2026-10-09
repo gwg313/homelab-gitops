@@ -1,0 +1,126 @@
+# Shipwright strategy for Go images built with ko (no Dockerfile).
+#
+# Based on the upstream sample (shipwright-io/build samples/v1beta1/buildstrategy/ko),
+# with ko pinned and checksum-verified instead of fetched as "latest".
+# ko reads .ko.yaml from the context directory, so base image overrides there
+# apply. Use with the shipwright-build Task: strategy=ko, dockerfile="",
+# strategy-params=[package-directory=./cmd/app, go-version=1.26].
+# Needs egress to proxy.golang.org, sum.golang.org, github.com and
+# release-assets.githubusercontent.com (ko download), and the base image
+# registries.
+apiVersion: shipwright.io/v1beta1
+kind: ClusterBuildStrategy
+metadata:
+  name: ko
+  annotations:
+    # apply only after the Shipwright conversion webhook (wave 0) is healthy
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  parameters:
+    - name: go-flags
+      description: Value for the GOFLAGS environment variable.
+      default: ""
+    - name: go-version
+      description: Tag of the golang image to build with (https://hub.docker.com/_/golang).
+      default: "1.26"
+    - name: package-directory
+      description: The directory inside the context directory containing the main package.
+      default: "."
+    - name: target-platform
+      description: >-
+        Platform(s) to build, e.g. linux/arm64 or linux/arm64,linux/amd64.
+        "current" builds the platform the build runs on.
+      default: current
+  volumes:
+    - name: gocache
+      description: GOCACHE and module cache. Can be a persistent volume to speed up rebuilds.
+      overridable: true
+      emptyDir: {}
+    - name: ko-tmp
+      description: ko binary and other temporary build files.
+      overridable: true
+      emptyDir: {}
+  steps:
+    - name: build
+      image: docker.io/library/golang:$(params.go-version)
+      workingDir: $(params.shp-source-root)
+      securityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      volumeMounts:
+        - mountPath: /gocache
+          name: gocache
+        - mountPath: /ko-tmp
+          name: ko-tmp
+      env:
+        - name: DOCKER_CONFIG
+          value: /tekton/home/.docker
+        - name: HOME
+          value: /tekton/home
+        - name: GOFLAGS
+          value: $(params.go-flags)
+        - name: GOCACHE
+          value: /gocache/go-build
+        - name: GOMODCACHE
+          value: /gocache/go-mod
+        - name: GOTMPDIR
+          value: /ko-tmp
+        - name: TMPDIR
+          value: /ko-tmp
+        - name: PARAM_OUTPUT_DIRECTORY
+          value: $(params.shp-output-directory)
+        - name: PARAM_SOURCE_CONTEXT
+          value: $(params.shp-source-context)
+        - name: PARAM_SOURCE_ROOT
+          value: $(params.shp-source-root)
+        - name: PARAM_TARGET_PLATFORM
+          value: $(params.target-platform)
+        - name: PARAM_PACKAGE_DIRECTORY
+          value: $(params.package-directory)
+      command:
+        - /bin/bash
+      args:
+        - -c
+        - |
+          set -euo pipefail
+
+          KO_VERSION=0.19.1
+          case "$(uname -m)" in
+            x86_64) ko_arch=x86_64; ko_sha=635ac6ea3fd376c935fee597fbb29ab2c2449f49ef1655085fe3aa9c25fed7a5 ;;
+            aarch64) ko_arch=arm64; ko_sha=4099b2d1170d3b8a70e049237462efc2dd14d5fa30e9d2e5e108fb4f778cdd3f ;;
+            *) echo "unsupported architecture $(uname -m)" >&2; exit 1 ;;
+          esac
+          curl -fsSL -o /ko-tmp/ko.tar.gz \
+            "https://github.com/ko-build/ko/releases/download/v${KO_VERSION}/ko_${KO_VERSION}_Linux_${ko_arch}.tar.gz"
+          echo "${ko_sha}  /ko-tmp/ko.tar.gz" | sha256sum -c -
+          tar -xzf /ko-tmp/ko.tar.gz -C /ko-tmp ko
+
+          PLATFORM="${PARAM_TARGET_PLATFORM}"
+          if [ "${PLATFORM}" == "current" ]; then
+            PLATFORM="$(uname | tr '[:upper:]' '[:lower:]')/$(uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')"
+          fi
+
+          go version
+          echo "ko version $(/ko-tmp/ko version)"
+
+          # The source volume is owned by another user; let Go run git for VCS stamping.
+          git config --global --add safe.directory "${PARAM_SOURCE_ROOT}"
+
+          export GOROOT="$(go env GOROOT)"
+          cd "${PARAM_SOURCE_CONTEXT}"
+          /ko-tmp/ko build "${PARAM_PACKAGE_DIRECTORY}" \
+            --oci-layout-path="${PARAM_OUTPUT_DIRECTORY}" \
+            --platform="${PLATFORM}" \
+            --push=false
+      resources:
+        limits:
+          cpu: "2"
+          memory: 3Gi
+        requests:
+          cpu: 250m
+          memory: 256Mi
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000

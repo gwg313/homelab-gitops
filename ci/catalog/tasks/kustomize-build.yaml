@@ -15,6 +15,16 @@ spec:
       type: string
       description: Space-separated path prefixes (relative, e.g. ./old) to skip.
       default: ""
+    - name: flags
+      type: array
+      description: Extra `kustomize build` flags, e.g. ["--load-restrictor=LoadRestrictionsNone"].
+      default: []
+    - name: output-dir
+      type: string
+      description: >-
+        If set, write each render to <output-dir>/<path with / as _>.yaml in
+        the workspace (e.g. for kubeconform). Empty only checks that it renders.
+      default: ""
   volumes:
     - name: tmp
       emptyDir: {}
@@ -44,16 +54,25 @@ spec:
           value: /tmp
         - name: EXCLUDE_PATHS
           value: $(params.exclude-paths)
+        - name: OUTPUT_DIR
+          value: $(params.output-dir)
+      args: ["$(params.flags[*])"]
       script: |
         #!/bin/sh
         set -eu
         fail=0
+        [ -z "$OUTPUT_DIR" ] || mkdir -p "$OUTPUT_DIR"
         for k in $(find . -path ./.git -prune -o -name kustomization.yaml -print | xargs -n1 dirname | sort); do
           case "$k" in */templates|*/templates/*) continue ;; esac
           skip=0
           for e in $EXCLUDE_PATHS; do case "$k" in "$e"|"$e"/*) skip=1 ;; esac; done
           [ "$skip" = 1 ] && continue
-          if out=$(kustomize build "$k" 2>&1 >/dev/null); then
+          dest=/dev/null
+          if [ -n "$OUTPUT_DIR" ]; then
+            case "$k" in .) n=root ;; *) n=$(echo "${k#./}" | tr / _) ;; esac
+            dest="$OUTPUT_DIR/$n.yaml"
+          fi
+          if out=$(kustomize build "$@" "$k" 2>&1 >"$dest"); then
             echo "ok   $k"
           else
             echo "FAIL $k"; echo "$out" | tail -5 | sed 's/^/     /'; fail=1

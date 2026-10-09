@@ -1,0 +1,68 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: go-test
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Run `go test` for a Go module in the source workspace. Needs egress to
+    proxy.golang.org and sum.golang.org for modules.
+  workspaces:
+    - name: source
+  params:
+    - name: module-dir
+      type: string
+      description: Directory of the module (containing go.mod), relative to the workspace.
+      default: "."
+    - name: packages
+      type: string
+      description: Space-separated package patterns.
+      default: ./...
+    - name: flags
+      type: array
+      description: Flags passed to go test.
+      default: ["-race", "-count=1"]
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: go-test
+      image: docker.io/library/golang:1.26.9-trixie@sha256:f89535b7caea67fa9ff0ba009894bff8f3be915e49cb635477c8ce04e045db5d
+      workingDir: $(workspaces.source.path)/$(params.module-dir)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 3Gi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: HOME
+          value: /tmp
+        - name: GOPATH
+          value: /tmp/go
+        - name: GOCACHE
+          value: /tmp/go-build
+        # -race needs cgo
+        - name: CGO_ENABLED
+          value: "1"
+        - name: PACKAGES
+          value: $(params.packages)
+      args: ["$(params.flags[*])"]
+      script: |
+        #!/bin/sh
+        set -eu
+        go version
+        # PACKAGES is a list of patterns; split it into separate arguments
+        set -f
+        go test "$@" $PACKAGES

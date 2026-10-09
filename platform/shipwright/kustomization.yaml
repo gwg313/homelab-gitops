@@ -6,6 +6,7 @@ resources:
   - https://github.com/shipwright-io/build/releases/download/v0.21.7/release.yaml
   - webhook-cert.yaml
   - buildah-chroot.yaml
+  - ko.yaml
 
 patches:
   - patch: |

@@ -1,0 +1,56 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: golangci-lint
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Run golangci-lint (v2) for a Go module in the source workspace, using the
+    module's own .golangci.yml. Needs egress to proxy.golang.org and
+    sum.golang.org for modules.
+  workspaces:
+    - name: source
+  params:
+    - name: module-dir
+      type: string
+      description: Directory of the module (containing go.mod), relative to the workspace.
+      default: "."
+    - name: args
+      type: array
+      description: Arguments passed to `golangci-lint run`.
+      default: ["./..."]
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: golangci-lint
+      image: docker.io/golangci/golangci-lint:v2.12.2@sha256:5cceeef04e53efe1470638d4b4b4f5ceefd574955ab3941b2d9a68a8c9ad5240
+      workingDir: $(workspaces.source.path)/$(params.module-dir)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 3Gi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: HOME
+          value: /tmp
+        - name: GOPATH
+          value: /tmp/go
+        - name: GOCACHE
+          value: /tmp/go-build
+        - name: GOLANGCI_LINT_CACHE
+          value: /tmp/golangci-lint
+      command: [golangci-lint, run]
+      args: ["$(params.args[*])"]

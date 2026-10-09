@@ -1,0 +1,61 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: govulncheck
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Scan a Go module in the source workspace for known vulnerabilities with
+    govulncheck. Needs egress to proxy.golang.org, sum.golang.org and
+    vuln.go.dev.
+  workspaces:
+    - name: source
+  params:
+    - name: module-dir
+      type: string
+      description: Directory of the module (containing go.mod), relative to the workspace.
+      default: "."
+    - name: packages
+      type: string
+      description: Space-separated package patterns.
+      default: ./...
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: govulncheck
+      image: docker.io/library/golang:1.26.9-trixie@sha256:f89535b7caea67fa9ff0ba009894bff8f3be915e49cb635477c8ce04e045db5d
+      workingDir: $(workspaces.source.path)/$(params.module-dir)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
+        limits:
+          cpu: "2"
+          memory: 2Gi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: HOME
+          value: /tmp
+        - name: GOPATH
+          value: /tmp/go
+        - name: GOCACHE
+          value: /tmp/go-build
+        - name: PACKAGES
+          value: $(params.packages)
+      script: |
+        #!/bin/sh
+        set -eu
+        go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+        # PACKAGES is a list of patterns; split it into separate arguments
+        set -f
+        /tmp/go/bin/govulncheck $PACKAGES

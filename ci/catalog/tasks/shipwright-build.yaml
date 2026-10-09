@@ -22,7 +22,16 @@ spec:
     - name: context-dir
       default: "."
     - name: dockerfile
+      description: >-
+        Dockerfile path for the strategy's `dockerfile` parameter. Set to ""
+        for strategies that don't take one (e.g. ko).
       default: Dockerfile
+    - name: strategy-params
+      type: array
+      description: >-
+        Extra single-value strategy parameters as name=value, e.g.
+        package-directory=./cmd/app for the ko strategy.
+      default: []
     - name: strategy
       description: ClusterBuildStrategy to use.
       default: buildah-chroot
@@ -83,18 +92,37 @@ spec:
           value: $(params.timeout)
         - name: PIPELINE_RUN
           value: $(context.pipelineRun.name)
+      args: ["$(params.strategy-params[*])"]
       script: |
         #!/bin/sh
         set -eu
 
         # values are spliced into YAML below; refuse anything that could break out of a quoted scalar
         for v in "$NS" "$GIT_URL" "$REVISION" "$IMAGE" "$CONTEXT_DIR" "$DOCKERFILE" \
-                 "$STRATEGY" "$PUSH_SECRET" "$CLONE_SECRET" "$TIMEOUT" "$PIPELINE_RUN"; do
+                 "$STRATEGY" "$PUSH_SECRET" "$CLONE_SECRET" "$TIMEOUT" "$PIPELINE_RUN" "$@"; do
           case "$v" in
             *'"'*|*'\'*|*"
         "*) echo "refusing parameter value with quote, backslash or newline" >&2; exit 1 ;;
           esac
         done
+
+        # strategy paramValues: dockerfile (unless empty) plus each name=value
+        param_values=""
+        add_param() {
+          param_values="$param_values
+                - name: \"$1\"
+                  value: \"$2\""
+        }
+        if [ -n "$DOCKERFILE" ]; then
+          add_param dockerfile "$DOCKERFILE"
+        fi
+        for p in "$@"; do
+          case "$p" in
+            ?*=*) add_param "${p%%=*}" "${p#*=}" ;;
+            *) echo "strategy-params entry is not name=value: $p" >&2; exit 1 ;;
+          esac
+        done
+        [ -n "$param_values" ] || param_values=" []"
 
         # image repository without tag (tag = ':' after the last '/')
         repo="$IMAGE"
@@ -129,9 +157,7 @@ spec:
               strategy:
                 kind: ClusterBuildStrategy
                 name: "$STRATEGY"
-              paramValues:
-                - name: dockerfile
-                  value: "$DOCKERFILE"
+              paramValues:$param_values
               output:
                 image: "$IMAGE"
                 pushSecret: "$PUSH_SECRET"

@@ -15,6 +15,19 @@ spec:
       type: string
       description: Space-separated file names to skip in addition to Chart.yaml and *values*.yaml.
       default: ""
+    - name: paths
+      type: string
+      description: >-
+        Space-separated files or directories to validate instead of scanning
+        the whole workspace (e.g. rendered kustomize output). exclude-names
+        does not apply to these.
+      default: ""
+    - name: crd-schemas
+      type: string
+      description: >-
+        "true" to also validate CRDs (Cilium, Gateway API, ...) against the
+        datreeio CRDs-catalog instead of skipping them.
+      default: "false"
   steps:
     - name: kubeconform
       image: ghcr.io/yannh/kubeconform:v0.8.0-alpine@sha256:6b90a5f23d846140ce0194fe050b1995e546eba938f3a6bf10c039dd5e24588f
@@ -28,16 +41,31 @@ spec:
       env:
         - name: EXCLUDE_NAMES
           value: $(params.exclude-names)
+        - name: PATHS
+          value: $(params.paths)
+        - name: CRD_SCHEMAS
+          value: $(params.crd-schemas)
       script: |
         #!/bin/sh
         set -e
         SCHEMA='https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{.ResourceKind}}-{{.ResourceAPIVersion}}.json'
+        CRDS='https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+        crd_flag=""
+        if [ "$CRD_SCHEMAS" = true ]; then crd_flag="-schema-location=$CRDS"; fi
+        validate() {
+          xargs /kubeconform \
+            -strict \
+            -summary \
+            -ignore-missing-schemas \
+            ${crd_flag:+"$crd_flag"} \
+            -schema-location "$SCHEMA" \
+            -schema-location default
+        }
+        if [ -n "$PATHS" ]; then
+          printf '%s\n' $PATHS | validate
+          exit
+        fi
         set -- \( -path ./.git -o -path '*/templates' \) -prune -o -type f \
           \( -name '*.yaml' -o -name '*.yml' \) ! -name Chart.yaml ! -name '*values*.yaml'
         for n in $EXCLUDE_NAMES; do set -- "$@" ! -name "$n"; done
-        find . "$@" -print | xargs /kubeconform \
-          -strict \
-          -summary \
-          -ignore-missing-schemas \
-          -schema-location "$SCHEMA" \
-          -schema-location default
+        find . "$@" -print | validate

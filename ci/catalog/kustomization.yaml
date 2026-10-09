@@ -10,3 +10,6 @@ resources:
   - tasks/shipwright-build.yaml
   - tasks/kustomize-build.yaml
   - tasks/helm-template.yaml
+  - tasks/go/go-test.yaml
+  - tasks/go/golangci-lint.yaml
+  - tasks/go/govulncheck.yaml
