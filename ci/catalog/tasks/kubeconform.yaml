@@ -13,7 +13,7 @@ spec:
   params:
     - name: exclude-names
       type: string
-      description: Space-separated file names to skip in addition to Chart.yaml and values*.yaml.
+      description: Space-separated file names to skip in addition to Chart.yaml and *values*.yaml.
       default: ""
   steps:
     - name: kubeconform
@@ -33,7 +33,7 @@ spec:
         set -e
         SCHEMA='https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{.ResourceKind}}-{{.ResourceAPIVersion}}.json'
         set -- \( -path ./.git -o -path '*/templates' \) -prune -o -type f \
-          \( -name '*.yaml' -o -name '*.yml' \) ! -name Chart.yaml ! -name 'values*.yaml'
+          \( -name '*.yaml' -o -name '*.yml' \) ! -name Chart.yaml ! -name '*values*.yaml'
         for n in $EXCLUDE_NAMES; do set -- "$@" ! -name "$n"; done
         find . "$@" -print | xargs /kubeconform \
           -strict \

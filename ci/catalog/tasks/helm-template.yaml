@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: helm-template
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Build dependencies for and `helm template` every chart in the source
+    workspace, failing if any doesn't render. A chart can ship a
+    `ci-values.yaml` next to its Chart.yaml for required values. Needs egress
+    to the charts' repositories.
+  workspaces:
+    - name: source
+  params:
+    - name: exclude-paths
+      type: string
+      description: Space-separated path prefixes (relative, e.g. ./old) to skip.
+      default: ""
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: helm-template
+      image: docker.io/alpine/k8s:1.36.4@sha256:358ddfc2d6ff3f00dd461dbd79aaa6d6738709f225b8da0945bb63bd4dbc304e
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: HOME
+          value: /tmp
+        - name: HELM_CACHE_HOME
+          value: /tmp/helm/cache
+        - name: HELM_CONFIG_HOME
+          value: /tmp/helm/config
+        - name: HELM_DATA_HOME
+          value: /tmp/helm/data
+        - name: EXCLUDE_PATHS
+          value: $(params.exclude-paths)
+      script: |
+        #!/bin/sh
+        set -eu
+        fail=0
+        for c in $(find . -path ./.git -prune -o -name Chart.yaml -print | xargs -n1 dirname | sort); do
+          skip=0
+          for e in $EXCLUDE_PATHS; do case "$c" in "$e"|"$e"/*) skip=1 ;; esac; done
+          [ "$skip" = 1 ] && continue
+          # work on a copy: the workspace may be read-only for this step's user
+          d=$(mktemp -d); cp -r "$c"/. "$d"/
+          if ! out=$(helm dependency build "$d" 2>&1); then
+            echo "FAIL $c (dependencies)"; echo "$out" | tail -5 | sed 's/^/     /'; fail=1; continue
+          fi
+          set --
+          [ -f "$c/ci-values.yaml" ] && set -- -f "$c/ci-values.yaml"
+          if out=$(helm template ci "$d" "$@" 2>&1 >/dev/null); then
+            echo "ok   $c"
+          else
+            echo "FAIL $c"; echo "$out" | tail -5 | sed 's/^/     /'; fail=1
+          fi
+          rm -rf "$d"
+        done
+        exit "$fail"

@@ -8,3 +8,5 @@ resources:
   - tasks/kubeconform.yaml
   - tasks/gitleaks.yaml
   - tasks/shipwright-build.yaml
+  - tasks/kustomize-build.yaml
+  - tasks/helm-template.yaml

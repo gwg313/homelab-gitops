@@ -1,0 +1,62 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: kustomize-build
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Run `kustomize build` on every kustomization in the source workspace and
+    fail if any of them doesn't render. Remote resources need egress to their
+    hosts (e.g. github.com, release-assets.githubusercontent.com).
+  workspaces:
+    - name: source
+  params:
+    - name: exclude-paths
+      type: string
+      description: Space-separated path prefixes (relative, e.g. ./old) to skip.
+      default: ""
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: kustomize-build
+      image: docker.io/alpine/k8s:1.36.4@sha256:358ddfc2d6ff3f00dd461dbd79aaa6d6738709f225b8da0945bb63bd4dbc304e
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 200m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: HOME
+          value: /tmp
+        - name: EXCLUDE_PATHS
+          value: $(params.exclude-paths)
+      script: |
+        #!/bin/sh
+        set -eu
+        fail=0
+        for k in $(find . -path ./.git -prune -o -name kustomization.yaml -print | xargs -n1 dirname | sort); do
+          case "$k" in */templates|*/templates/*) continue ;; esac
+          skip=0
+          for e in $EXCLUDE_PATHS; do case "$k" in "$e"|"$e"/*) skip=1 ;; esac; done
+          [ "$skip" = 1 ] && continue
+          if out=$(kustomize build "$k" 2>&1 >/dev/null); then
+            echo "ok   $k"
+          else
+            echo "FAIL $k"; echo "$out" | tail -5 | sed 's/^/     /'; fail=1
+          fi
+        done
+        exit "$fail"

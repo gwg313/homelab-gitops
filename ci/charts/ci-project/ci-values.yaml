@@ -1,0 +1,4 @@
+# Example values so CI (helm-template task) can render this chart.
+name: example
+repository:
+  url: https://git.gwg313.xyz/gwg313/example
