@@ -9,4 +9,6 @@ resources:
   - network-policy.yaml
   - deployment.yaml
   - service.yaml
+  - anubis-key-sealed.yaml
+  - anubis.yaml
   - route.yaml

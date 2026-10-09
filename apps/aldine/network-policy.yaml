@@ -25,8 +25,8 @@ spec:
             - port: "4020"
               protocol: TCP
     # Forgejo sync via https://git.gwg313.xyz. The shared gateway's Envoy runs
-    # in the Cilium agent and policy is checked against this pod, so the
-    # Forgejo pod itself must be allowed too (and Forgejo must admit us).
+    # in the Cilium agent and this pod's egress is checked against the route's
+    # backend, Anubis in front of Forgejo.
     - toEntities:
         - ingress
       toPorts:
@@ -36,10 +36,10 @@ spec:
     - toEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: forgejo
-            app: forgejo
+            app: anubis
       toPorts:
         - ports:
-            - port: "3000"
+            - port: "8923"
               protocol: TCP
     # Forgejo (public hostname) and GitHub sync: API and git over https
     - toFQDNs:

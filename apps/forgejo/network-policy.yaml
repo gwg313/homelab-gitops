@@ -1,6 +1,49 @@
 # ----------------------------------------------------
-# Ingress only from Gateway API
+# Public route: gateway -> anubis -> forgejo
 # ----------------------------------------------------
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: anubis
+  namespace: forgejo
+spec:
+  endpointSelector:
+    matchLabels:
+      app: anubis
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "8923"
+              protocol: TCP
+    # In-cluster clients that use https://git.gwg313.xyz: Cilium checks the
+    # gateway's backend against the original pod, not the gateway. Aldine's
+    # Forgejo sync, CI image builds (Shipwright clones the public URL) and
+    # Argo CD repositories registered with the public URL.
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: aldine
+            app: aldine
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.ci.home.arpa/role: pipeline
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.ci.home.arpa/role: build
+        - matchLabels:
+            io.kubernetes.pod.namespace: argocd
+      toPorts:
+        - ports:
+            - port: "8923"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: forgejo
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+---
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
@@ -12,8 +55,10 @@ spec:
       app: forgejo
 
   ingress:
-    - fromEntities:
-        - ingress
+    # the public route, through Anubis
+    - fromEndpoints:
+        - matchLabels:
+            app: anubis
       toPorts:
         - ports:
             - port: "3000"
@@ -27,16 +72,6 @@ spec:
         - matchLabels:
             io.kubernetes.pod.namespace: pipelines-as-code
             app: pipelines-as-code-watcher
-      toPorts:
-        - ports:
-            - port: "3000"
-              protocol: TCP
-    # Aldine's Forgejo sync (through the shared gateway, checked against the
-    # Aldine pod)
-    - fromEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: aldine
-            app: aldine
       toPorts:
         - ports:
             - port: "3000"

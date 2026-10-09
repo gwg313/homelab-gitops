@@ -19,9 +19,10 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
+        # Anubis filters scrapers, then proxies to forgejo
         - group: ""
           kind: Service
-          name: forgejo
+          name: anubis
           port: 80
           weight: 1
 ---
@@ -38,4 +39,4 @@ spec:
   to:
     - group: ""
       kind: Service
-      name: forgejo
+      name: anubis

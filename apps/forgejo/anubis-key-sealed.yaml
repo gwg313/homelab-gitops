@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: anubis-key
+  namespace: forgejo
+spec:
+  encryptedData:
+    ED25519_PRIVATE_KEY_HEX: AgC6o2XE2Yls0pXMFY8Jgsmh9uNIKIpZ9UzeLM4x6CrviX+MaJ4Si4Ghg8tc10HPYSEpKyZMfdknACyppc+ueh3UBs6MY4gOYT6EprL3tgP9WCIlryBqgrYpyiFwlaSS+eJdUDfApckbfnCP6hEsEhwBKBD24MTiOEp5DRRiS8mv9Kwan0yXrqNukJ1PJ3WiUQlkhDhvbheSdwbGBKZMtlzBlmJ04DccmkXxrXLMaQ2Uy9OD66k6NVansLoServguq4WO9Fz77Zuytqqjo5tYpt21Teof/Ji6ue7kX2dE8bnHNwkugfl8I3k9h7ZFexsYcx+ADKqZU7TmxPwFVeFmHU9TPZ2TMew8ChhPOM4nqlAmn6PzkvhCYvBt3tamNy7JRSgU9lSicpInZEj4r2MoxGGeWYO4bBpLdQW4Qy0kll1jCToMmZYTDBsylFVFDa9g/TTvXOjtq7Kpqr+GDC6GL4isbM8PCWkAiOCBqNG33x16McSPm2S5I7NRANM+lQHNskLQZJfHOXNGZ/o7SbDHoXznMCL3pjCtbt+JL0QQPiTn6nCcfN6HY5/T3PHd5g4XzEj96cf+M0JXbkjykKaNydsznOiD/lhuV7YCwpPTFp9HUTpK6cwKyF62B1IPej9OSsUwZ1+e/Dh/vA3SvVnNtaoTsFkrV3Iw5XCKIU20hBQ1tW5wf1u9b1uArkLg/cua6XV2PX7QHtwBdMDse9NOh1+FP0g0LJfqQ/5ixwJKuKCuoJM5DZ+cIOq8mk/iHoy0X+P3PcIS7ivjezl5S7bNFrM
+  template:
+    metadata:
+      name: anubis-key
+      namespace: forgejo

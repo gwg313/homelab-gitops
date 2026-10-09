@@ -1,0 +1,130 @@
+# Anubis (https://anubis.techaro.lol) in front of Forgejo's public route only:
+# gateway -> anubis -> forgejo. In-cluster clients (PaC, CI clones, Argo CD via
+# the service) talk to forgejo:80 directly and never see it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: anubis-policy
+  namespace: forgejo
+data:
+  botPolicy.yaml: |
+    bots:
+      # Non-browser clients must never be challenged. Anubis already lets
+      # non-"Mozilla" user agents through, but pin it so an upgrade that
+      # tightens the defaults can't break them.
+      # git over https: clone/fetch/push, and LFS
+      - name: forgejo-git-smart-http
+        path_regex: ^/[^/]+/[^/]+?(\.git)?/(info/refs|git-upload-pack|git-receive-pack|info/lfs/.*)$
+        action: ALLOW
+      # REST API (Aldine sync, tokens, tea) and package registry downloads
+      - name: forgejo-api
+        path_regex: ^/api/
+        action: ALLOW
+      # release/attachment downloads by URL (curl, scripts)
+      - name: forgejo-downloads
+        path_regex: ^/[^/]+/[^/]+/(releases/download|archive)/
+        user_agent_regex: ^(curl|Wget|git|Go-http-client|python-requests)/
+        action: ALLOW
+      # RSS/Atom feeds
+      - import: (data)/apps/gitea-rss-feeds.yaml
+      # upstream defaults: deny known AI scrapers, allow good search crawlers,
+      # challenge browsers
+      - import: (data)/meta/default-config.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anubis
+  namespace: forgejo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anubis
+  template:
+    metadata:
+      labels:
+        app: anubis
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: anubis
+          image: ghcr.io/techarohq/anubis:v1.28.1@sha256:1744c03a918160a28b0d2e8c1656de6585f4071b30b4c3b0d51d02282c9b7c25
+          # ... and don't bind pass cookies to it: that address is the
+          # gateway on whichever node took the request, not the visitor. (A
+          # flag, since an empty environment variable keeps the default.)
+          args: ["--jwt-restriction-header="]
+          ports:
+            - name: http
+              containerPort: 8923
+            - name: metrics
+              containerPort: 9090
+          env:
+            - name: BIND
+              value: ":8923"
+            - name: METRICS_BIND
+              value: ":9090"
+            - name: TARGET
+              value: http://forgejo.forgejo.svc.cluster.local
+            - name: POLICY_FNAME
+              value: /etc/anubis/botPolicy.yaml
+            # The gateway's X-Forwarded-For holds only private addresses for
+            # LAN clients, which Anubis strips, leaving no client IP at all
+            # ("X-Real-IP header is not set"). Use the connecting address
+            # (the gateway) instead ...
+            - name: USE_REMOTE_ADDRESS
+              value: "true"
+            # stable signing key: passed challenges survive restarts
+            - name: ED25519_PRIVATE_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: anubis-key
+                  key: ED25519_PRIVATE_KEY_HEX
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: policy
+              mountPath: /etc/anubis
+              readOnly: true
+      volumes:
+        - name: policy
+          configMap:
+            name: anubis-policy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anubis
+  namespace: forgejo
+spec:
+  selector:
+    app: anubis
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

@@ -28,12 +28,21 @@ ci.home.arpa/project: {{ include "ci-project.name" . }}
         - port: "3000"
           protocol: TCP
 {{- with .Values.repository.forgejoPublicHost }}
-# public Forgejo URL through the shared gateway (private-repo clones)
+# public Forgejo URL through the shared gateway (private-repo clones); the
+# gateway checks egress against the route's backend, Anubis
 - toEntities:
     - ingress
   toPorts:
     - ports:
         - port: "443"
+          protocol: TCP
+- toEndpoints:
+    - matchLabels:
+        io.kubernetes.pod.namespace: forgejo
+        app: anubis
+  toPorts:
+    - ports:
+        - port: "8923"
           protocol: TCP
 - toFQDNs:
     - matchName: {{ . | quote }}
