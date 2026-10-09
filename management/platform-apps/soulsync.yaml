@@ -16,7 +16,7 @@ spec:
   project: default
   sources:
     - repoURL: https://git.gwg313.xyz/gwg313/soulsync_new.git
-      targetRevision: d11ebf0688ed351d99c374d659fcc374df97e4c4
+      targetRevision: 48d5b41e756ad81ab488411ee708f010f817a06c
       path: k8s/overlays/prod
       kustomize:
         images:
@@ -34,9 +34,20 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: soulsync
+  # the API server adds defaults (volumeMode, status) to StatefulSet volume
+  # claim templates, which otherwise shows as a permanent diff
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      jqPathExpressions:
+        - .spec.volumeClaimTemplates[]?.spec.volumeMode
+        - .spec.volumeClaimTemplates[]?.status
+        - .spec.volumeClaimTemplates[]?.apiVersion
+        - .spec.volumeClaimTemplates[]?.kind
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
