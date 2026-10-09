@@ -96,7 +96,11 @@ spec:
         # image is read-only here, so use a writable copy
         cp .west/config /tmp/west-config
         export WEST_CONFIG_LOCAL=/tmp/west-config
+        # point CMake at Zephyr directly instead of relying on west
+        # zephyr-export, whose package registry lives under $HOME
+        zephyr_base=${ZEPHYR_BASE:-/zmk/zephyr}
         west build -p always -s zmk/app -d /tmp/build -b "$BOARD" -- \
+          -DZephyr_DIR="$zephyr_base/share/zephyr-package/cmake" \
           ${SHIELD:+-DSHIELD="$SHIELD"} -DZMK_CONFIG="$CONFIG_DIR" "$@"
         mkdir -p "$OUTPUT_DIR"
         cp /tmp/build/zephyr/zmk.uf2 "$OUTPUT_DIR/$name.uf2"
