@@ -44,7 +44,7 @@ spec:
             - name: HOME
               value: /tmp
             - name: ALDINE_PUBLIC_URL
-              value: https://aldine.gwg313.xyz
+              value: https://latex.gwg313.xyz
             # login, per-project ownership and sharing
             - name: AUTH_ENABLED
               value: "1"

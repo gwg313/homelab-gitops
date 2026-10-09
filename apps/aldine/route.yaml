@@ -10,9 +10,9 @@ spec:
       name: shared-edge-gateway
       namespace: cilium-ingress
   hostnames:
-    - aldine.gwg313.xyz
-    - aldine.local.gwg313.xyz
-    - aldine.zerotier.gwg313.xyz
+    - latex.gwg313.xyz
+    - latex.local.gwg313.xyz
+    - latex.zerotier.gwg313.xyz
   rules:
     - matches:
         - path:
