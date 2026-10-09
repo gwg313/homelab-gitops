@@ -74,6 +74,10 @@ spec:
           value: safe.directory
         - name: GIT_CONFIG_VALUE_0
           value: "*"
+        # instead of west zephyr-export, which raced when several builds ran
+        # it against the shared checkout at once
+        - name: ZEPHYR_BASE
+          value: $(workspaces.source.path)/zephyr
         - name: BOARD
           value: $(params.board)
         - name: SHIELD
@@ -88,8 +92,6 @@ spec:
         set -eu
         name="${SHIELD:+$SHIELD-}$BOARD"
         echo "::: building $name"
-        # registers Zephyr's CMake package under $HOME, which is per pod
-        west zephyr-export
         # the build directory goes to the pod-local volume, not the workspace
         west build -p always -s zmk/app -d /tmp/build -b "$BOARD" -- \
           ${SHIELD:+-DSHIELD="$SHIELD"} -DZMK_CONFIG="$CONFIG_DIR" "$@"
