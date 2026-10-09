@@ -30,8 +30,10 @@ egressFQDNs:
   - index.docker.io
   - registry-1.docker.io
   - auth.docker.io
-  # layer blobs come from CDN hosts (production.cloudflare/cloudfront.docker.com)
+  # layer blobs come from CDN hosts; Cilium's "*" matches a single DNS label,
+  # so the two-level cloudfront host needs its own entry
   - "*.docker.com"
+  - production.cloudfront.docker.com
   # frontend and enrichment-base package installs
   - registry.npmjs.org
   - dl-cdn.alpinelinux.org

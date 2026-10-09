@@ -27,7 +27,8 @@ build:
 
 # Extra FQDNs (port 443) that pipeline and build pods may reach,
 # e.g. package registries. Prefer a Harbor proxy-cache instead.
-# Entries containing "*" become Cilium matchPattern rules (e.g. "*.docker.com").
+# Entries containing "*" become Cilium matchPattern rules (e.g. "*.docker.com");
+# "*" matches exactly one DNS label.
 egressFQDNs: []
 
 resources:
