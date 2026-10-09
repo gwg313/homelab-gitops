@@ -16,7 +16,7 @@ spec:
   project: default
   sources:
     - repoURL: https://git.gwg313.xyz/gwg313/soulsync_new.git
-      targetRevision: 879e78626d4e16b695b3fd77677d7708618c036f
+      targetRevision: 3bc2b278b087c4663e2731803393b5fb883efdf6
       path: k8s/overlays/prod
       kustomize:
         images:
