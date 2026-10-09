@@ -55,7 +55,11 @@ ci.home.arpa/project: {{ include "ci-project.name" . }}
 {{- with .Values.egressFQDNs }}
 - toFQDNs:
   {{- range . }}
+    {{- if contains "*" . }}
+    - matchPattern: {{ . | quote }}
+    {{- else }}
     - matchName: {{ . | quote }}
+    {{- end }}
   {{- end }}
   toPorts:
     - ports:

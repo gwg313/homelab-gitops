@@ -30,7 +30,8 @@ egressFQDNs:
   - index.docker.io
   - registry-1.docker.io
   - auth.docker.io
-  - production.cloudflare.docker.com
+  # layer blobs come from CDN hosts (production.cloudflare/cloudfront.docker.com)
+  - "*.docker.com"
   # frontend and enrichment-base package installs
   - registry.npmjs.org
   - dl-cdn.alpinelinux.org

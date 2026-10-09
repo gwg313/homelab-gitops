@@ -26,6 +26,7 @@ build:
   registryHost: registry.gwg313.xyz
 
 # Extra FQDNs (port 443) that pipeline and build pods may reach,
+# Entries containing "*" become Cilium matchPattern rules (e.g. "*.docker.com").
 # e.g. package registries. Prefer a Harbor proxy-cache instead.
 egressFQDNs: []
 
