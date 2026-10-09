@@ -1,5 +1,5 @@
 # CI for gwg313/soulsync_new (private): Go checks + rendered-manifest
-# validation, Shipwright image builds (ko + buildah) pushed to Harbor.
+# validation, Shipwright image builds (ko + kaniko) pushed to Harbor.
 name: soulsync
 
 repository:
@@ -24,7 +24,7 @@ egressFQDNs:
   - github.com
   - release-assets.githubusercontent.com
   - objects.githubusercontent.com
-  # base images: distroless (ko), alpine and node (buildah)
+  # base images: distroless (ko), alpine and node (kaniko)
   - gcr.io
   - registry-1.docker.io
   - auth.docker.io

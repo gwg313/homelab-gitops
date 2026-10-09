@@ -1,12 +1,21 @@
-# Dockerfile builds with buildah, without privileged mode:
-# root in the container with the PSA-baseline capability set, no privilege
-# escalation, RuntimeDefault seccomp, read-only root fs, chroot isolation and
-# vfs storage. Build namespaces must allow root and extra capabilities
-# (policy.home.arpa/allow-root, policy.home.arpa/allow-any-capabilities).
+# Dockerfile builds with kaniko, without privileged mode.
+# buildah needs CAP_SYS_ADMIN or user namespaces for RUN steps, and PSA
+# baseline plus the RuntimeDefault seccomp profile allow neither. kaniko runs
+# RUN steps directly in its own container filesystem: root with a small
+# capability set, no privilege escalation, RuntimeDefault seccomp. It unpacks
+# base images into /, so the root fs stays writable. Build namespaces must
+# allow root and extra capabilities (policy.home.arpa/allow-root,
+# policy.home.arpa/allow-any-capabilities).
+#
+# kaniko writes an image tarball; Shipwright's image-processing step pushes it
+# with the build's push secret (the same path the ko strategy uses).
+#
+# gcr.io/kaniko-project was archived in 2025; osscontainertools/kaniko is the
+# maintained fork. The -debug variant ships the busybox shell used below.
 apiVersion: shipwright.io/v1beta1
 kind: ClusterBuildStrategy
 metadata:
-  name: buildah-chroot
+  name: kaniko
   annotations:
     # apply only after the conversion webhook (wave 0) is healthy; creating a
     # Shipwright object while the webhook is unreachable sends the API servers
@@ -24,16 +33,9 @@ spec:
     - name: target
       description: Target stage of a multi-stage Dockerfile.
       default: ""
-  volumes:
-    - name: buildah-storage
-      overridable: false
-      emptyDir: {}
-    - name: buildah-tmp
-      overridable: false
-      emptyDir: {}
   steps:
-    - name: build-and-push
-      image: quay.io/containers/buildah:v1.43.2@sha256:8356af46e4b8b77d6b18d3607153a00b55f0352cb0a049da28ec563789c4554c
+    - name: build
+      image: ghcr.io/osscontainertools/kaniko:v1.28.5-debug@sha256:d6d74217dc077acfd3094992e917c357080a2d3fdd1042a49e34e29a7e57c572
       # source root, not the context: Tekton pre-creates a step's workingDir,
       # and a subdirectory inside the empty source volume makes the git clone
       # fail with "destination path ... is not an empty directory"
@@ -43,7 +45,7 @@ spec:
         runAsGroup: 0
         runAsNonRoot: false
         allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
+        readOnlyRootFilesystem: false
         seccompProfile:
           type: RuntimeDefault
         capabilities:
@@ -54,22 +56,14 @@ spec:
             - FOWNER
             - FSETID
             - KILL
-            - NET_BIND_SERVICE
             - SETFCAP
             - SETGID
-            - SETPCAP
             - SETUID
-            - SYS_CHROOT
-      volumeMounts:
-        - name: buildah-storage
-          mountPath: /var/lib/containers
-        - name: buildah-tmp
-          mountPath: /tmp
       env:
-        - name: TMPDIR
-          value: /tmp
         - name: HOME
-          value: /tmp
+          value: /tekton/home
+        - name: DOCKER_CONFIG
+          value: /tekton/home/.docker
         - name: DOCKERFILE
           value: $(params.dockerfile)
         - name: TARGET
@@ -78,6 +72,8 @@ spec:
           value: $(params.shp-output-image)
         - name: CONTEXT
           value: $(params.shp-source-context)
+        - name: OUTPUT_DIR
+          value: $(params.shp-output-directory)
       resources:
         requests:
           cpu: 500m
@@ -85,31 +81,34 @@ spec:
         limits:
           cpu: "2"
           memory: 4Gi
-      command: [/bin/bash]
+      command: [/busybox/sh]
       args:
         - -c
         - |
-          set -euo pipefail
-          cd "$CONTEXT"
-          # Tekton materialises the push secret linked to the builder ServiceAccount
-          # as a docker config; its location depends on the Tekton/HOME setup
-          for f in "$HOME/.docker/config.json" /tekton/creds/.docker/config.json /tekton/home/.docker/config.json; do
-            if [ -f "$f" ]; then export REGISTRY_AUTH_FILE="$f"; break; fi
-          done
-          build_args=()
-          for a in "$@"; do build_args+=(--build-arg "$a"); done
-          [ -n "$TARGET" ] && build_args+=(--target "$TARGET")
-          if [ ! -f "$DOCKERFILE" ]; then
+          set -eu
+          if [ ! -f "$CONTEXT/$DOCKERFILE" ]; then
             echo "Dockerfile '$DOCKERFILE' not found"
             printf DockerfileNotFound > '$(results.shp-error-reason.path)'
             printf "Dockerfile '%s' not found" "$DOCKERFILE" > '$(results.shp-error-message.path)'
             exit 1
           fi
-          # explicit --storage-driver: the env var alone still touches the image's
-          # read-only additional store under /usr/lib/containers
-          buildah --storage-driver=vfs bud --isolation=chroot "${build_args[@]}" \
-            --file "$DOCKERFILE" --tag "$IMAGE" .
-          buildah --storage-driver=vfs push --digestfile '$(results.shp-image-digest.path)' \
-            "$IMAGE" "docker://$IMAGE"
+          # build args arrive as positional parameters; rewrite each in place
+          # to --build-arg=KEY=VALUE (rotating through "$@" keeps quoting intact)
+          n=$#
+          while [ "$n" -gt 0 ]; do
+            set -- "$@" "--build-arg=$1"
+            shift
+            n=$((n - 1))
+          done
+          [ -n "$TARGET" ] && set -- "$@" "--target=$TARGET"
+          exec /kaniko/executor \
+            --context="dir://$CONTEXT" \
+            --dockerfile="$CONTEXT/$DOCKERFILE" \
+            --destination="$IMAGE" \
+            --no-push \
+            --tar-path="$OUTPUT_DIR/image.tar" \
+            --snapshot-mode=redo \
+            --ignore-path=/product_uuid \
+            "$@"
         - --
         - $(params.build-args[*])

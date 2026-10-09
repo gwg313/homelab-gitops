@@ -9,14 +9,14 @@ their code and `.tekton/` pipelines.
 push / PR ──> PaC ──> PipelineRun (ci-<project>)
                         ├─ tekton-catalog Tasks (lint, test, ...)
                         └─ shipwright-build ──> BuildRun (build-<project>)
-                                                  └─ buildah-chroot ──> Harbor
+                                                  └─ kaniko / ko ──> Harbor
 Harbor ──> Argo CD Image Updater ──> commit to homelab-gitops ──> Argo CD sync
 ```
 
 | Path | What |
 |------|------|
 | `platform/tekton` | Tekton Pipelines, dashboard, Pipelines-as-Code (pinned) |
-| `platform/shipwright` | Shipwright controller + `buildah-chroot` ClusterBuildStrategy |
+| `platform/shipwright` | Shipwright controller + `kaniko` and `ko` ClusterBuildStrategies |
 | `platform/argocd-image-updater` | Image Updater, Harbor registry config |
 | `ci/catalog` | Shared Tasks in `tekton-catalog` (only namespace the cluster resolver serves): git-clone, yamllint, kubeconform, gitleaks, kustomize-build, helm-template, shipwright-build |
 | `ci/charts/ci-project` | Chart for a project's namespaces, SAs, RBAC, quotas, network policy, PaC Repository |
@@ -35,7 +35,7 @@ own CI is `ci/projects/homelab-gitops` + `.tekton/ci.yaml`.
   nothing but create/watch BuildRuns in `build-<project>`.
 - Builds run in `build-<project>`, which holds the Harbor push secret. That
   namespace is the only one labelled to allow root + extra capabilities;
-  `buildah-chroot` uses the PSA-baseline capability set without privileged
+  `kaniko` uses the PSA-baseline capability set without privileged
   mode or privilege escalation.
 - Egress is limited to the git provider, the registry (via the shared
   gateway) and any FQDNs listed in the project's values.

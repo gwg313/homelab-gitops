@@ -5,7 +5,7 @@ resources:
   # v0.21 is built against Tekton Pipelines v1.15 (platform/tekton)
   - https://github.com/shipwright-io/build/releases/download/v0.21.7/release.yaml
   - webhook-cert.yaml
-  - buildah-chroot.yaml
+  - kaniko.yaml
   - ko.yaml
 
 patches:

@@ -34,7 +34,7 @@ spec:
       default: []
     - name: strategy
       description: ClusterBuildStrategy to use.
-      default: buildah-chroot
+      default: kaniko
     - name: push-secret
       description: Registry credentials Secret in the build namespace.
       default: harbor-push

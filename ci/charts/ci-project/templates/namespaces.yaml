@@ -14,7 +14,7 @@ metadata:
   labels:
     {{- include "ci-project.labels" . | nindent 4 }}
     ci.home.arpa/role: build
-    # buildah-chroot runs as root with the PSA-baseline capability set
+    # kaniko runs as root with the PSA-baseline capability set
     policy.home.arpa/allow-root: "true"
     policy.home.arpa/allow-any-capabilities: "true"
 {{- end }}
