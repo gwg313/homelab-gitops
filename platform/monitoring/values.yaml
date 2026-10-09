@@ -16,6 +16,21 @@ kube-prometheus-stack:
       useExistingSecret: true
       configSecret: alertmanager-custom-config
 
+  prometheus:
+    prometheusSpec:
+      # Without explicit resources the Kyverno defaults (200m / 512Mi) applied,
+      # WAL replay never finished inside the startup probe window and
+      # Prometheus restart-looped for weeks, saturating shared VM storage.
+      resources:
+        requests:
+          cpu: 250m
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+      retention: 7d
+      retentionSize: 4GB
+
   prometheus-node-exporter:
     podLabels:
       policy.home.arpa/allow-host-namespace: "true"
