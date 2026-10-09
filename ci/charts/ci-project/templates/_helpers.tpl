@@ -27,6 +27,21 @@ ci.home.arpa/project: {{ include "ci-project.name" . }}
     - ports:
         - port: "3000"
           protocol: TCP
+{{- with .Values.repository.forgejoPublicHost }}
+# public Forgejo URL through the shared gateway (private-repo clones)
+- toEntities:
+    - ingress
+  toPorts:
+    - ports:
+        - port: "443"
+          protocol: TCP
+- toFQDNs:
+    - matchName: {{ . | quote }}
+  toPorts:
+    - ports:
+        - port: "443"
+          protocol: TCP
+{{- end }}
 {{- else if eq .Values.repository.provider "github" }}
 - toFQDNs:
     - matchName: github.com

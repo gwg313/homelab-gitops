@@ -8,6 +8,10 @@ repository:
   provider: forgejo
   # In-cluster API URL, used when provider is forgejo.
   forgejoUrl: http://forgejo.forgejo.svc.cluster.local
+  # Public Forgejo host. Pipelines of private repos clone via this URL
+  # (through the shared gateway) because Pipelines-as-Code's per-run git
+  # credentials are issued for it, not for the in-cluster service.
+  forgejoPublicHost: git.gwg313.xyz
   # Secret in ci-<name> with keys `token` and `webhook-secret`
   # (ship it as a SealedSecret from the project directory).
   secretName: pac-git-token
