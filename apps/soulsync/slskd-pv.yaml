@@ -1,0 +1,27 @@
+# slskd's app directory (config, SQLite databases, share index, logs) on an
+# iSCSI LUN: SQLite locking is unreliable on NFS. Same TrueNAS portal and CHAP
+# setup as the other iSCSI volumes.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: slskd-data-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: slskd-iscsi
+  claimRef:
+    namespace: soulsync
+    name: slskd-data
+  iscsi:
+    targetPortal: truenas.local.gwg313.xyz:3260
+    iqn: iqn.2005-10.org.freenas.ctl:slskd
+    lun: 0
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: true
+    chapAuthSession: true
+    secretRef:
+      name: slskd-iscsi-auth

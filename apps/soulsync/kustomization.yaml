@@ -8,6 +8,9 @@ namespace: soulsync
 
 resources:
   - music-pv.yaml
+  - slskd-pv.yaml
+  # slskd-iscsi-auth: CHAP credentials for slskd's iSCSI LUN
+  - slskd-iscsi-auth-sealed.yaml
   - serviceaccount.yaml
   - slskd-route.yaml
   # harbor-pull: read-only Harbor robot for the private soulsync project
