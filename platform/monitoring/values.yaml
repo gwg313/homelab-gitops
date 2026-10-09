@@ -29,6 +29,15 @@ kube-prometheus-stack:
   kubeProxy:
     enabled: false
 
+  # Talos binds the controller manager and scheduler to 127.0.0.1, so they
+  # can't be scraped and TargetDown/*InstanceUnreachable fire forever.
+  # Opening them on 0.0.0.0 isn't worth the extra control plane surface; a
+  # broken scheduler or controller shows up as Pending pods anyway.
+  kubeControllerManager:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+
   prometheus:
     prometheusSpec:
       # Without explicit resources the Kyverno defaults (200m / 512Mi) applied,
