@@ -26,6 +26,8 @@ egressFQDNs:
   - objects.githubusercontent.com
   # base images: distroless (ko), alpine and node (kaniko)
   - gcr.io
+  # kaniko resolves Docker Hub as index.docker.io
+  - index.docker.io
   - registry-1.docker.io
   - auth.docker.io
   - production.cloudflare.docker.com
