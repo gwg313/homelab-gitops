@@ -1,0 +1,30 @@
+# Project git repositories and PDFs. Shared by the app and the compiler, which
+# can run on different nodes, hence NFS + ReadWriteMany. Both run as UID 1000,
+# the owner NFS maps every file to.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aldine-data
+  namespace: aldine
+spec:
+  storageClassName: nfs-retain
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+# Accounts, sessions, project metadata and generated secrets (META_DIR). App
+# only: it must stay out of the compiler's reach.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aldine-meta
+  namespace: aldine
+spec:
+  storageClassName: nfs-retain
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

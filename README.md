@@ -56,6 +56,7 @@ Each application directory contains the manifests or Helm values required to dep
 
 | App | Purpose |
 |-----|---------|
+| aldine | Collaborative LaTeX editor (Overleaf alternative) |
 | audiobookshelf | Audiobooks and podcasts |
 | bytestash | Code snippet storage |
 | forgejo | Git hosting and generic package registry |

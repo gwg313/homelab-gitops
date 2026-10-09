@@ -1,0 +1,90 @@
+# TeX Live + latexmk compile service. Compiles untrusted LaTeX, so it gets no
+# egress at all (network-policy.yaml) and only the app may call it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aldine-compiler
+  namespace: aldine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aldine-compiler
+  template:
+    metadata:
+      labels:
+        app: aldine-compiler
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: compiler
+          image: ghcr.io/trahloff/aldine-compiler:0.11.0@sha256:79ddc557b3d1ba2e34b36e032fdaefb9c5a0874daddb9d105663e0fdfc24f090
+          ports:
+            - name: http
+              containerPort: 4020
+          env:
+            - name: DATA_DIR
+              value: /data
+            - name: COMPILE_TIMEOUT_MS
+              value: "180000"
+            - name: MAX_CONCURRENT_COMPILES
+              value: "2"
+            # the image is built to run as root; give TeX a writable home and
+            # font/format cache
+            - name: HOME
+              value: /tmp
+            - name: TEXMFVAR
+              value: /tmp/texmf-var
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: aldine-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aldine-compiler
+  namespace: aldine
+spec:
+  selector:
+    app: aldine-compiler
+  ports:
+    - name: http
+      port: 4020
+      targetPort: http

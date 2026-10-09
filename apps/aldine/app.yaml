@@ -1,0 +1,112 @@
+# Aldine (https://github.com/trahloff/Aldine): collaborative LaTeX editor.
+# Flat-file storage, one replica (the only supported topology without
+# Postgres/Redis).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aldine
+  namespace: aldine
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: aldine
+  template:
+    metadata:
+      labels:
+        app: aldine
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: app
+          image: ghcr.io/trahloff/aldine-app:0.11.0@sha256:0b43b1e5588135f7415af80d740a8e54aebdc9aa4aff1d98a55e182e7fe78a13
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: DATA_DIR
+              value: /data
+            - name: META_DIR
+              value: /secrets
+            - name: COMPILER_URL
+              value: http://aldine-compiler:4020
+            # defaults to a directory inside the image, not writable as UID 1000
+            - name: CACHE_DIR
+              value: /cache
+            - name: HOME
+              value: /tmp
+            - name: ALDINE_PUBLIC_URL
+              value: https://aldine.gwg313.xyz
+            # login, per-project ownership and sharing
+            - name: AUTH_ENABLED
+              value: "1"
+            - name: COOKIE_SECURE
+              value: "1"
+            # client IPs come from the gateway's X-Forwarded-For
+            - name: TRUST_PROXY
+              value: "1"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: meta
+              mountPath: /secrets
+            - name: cache
+              mountPath: /cache
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: aldine-data
+        - name: meta
+          persistentVolumeClaim:
+            claimName: aldine-meta
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aldine
+  namespace: aldine
+spec:
+  selector:
+    app: aldine
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

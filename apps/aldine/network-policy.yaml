@@ -1,0 +1,59 @@
+# DNS egress and default-deny ingress come from the Kyverno-generated
+# namespace baseline (platform/kyverno/policies/40-generate).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: app
+  namespace: aldine
+spec:
+  endpointSelector:
+    matchLabels:
+      app: aldine
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app: aldine-compiler
+      toPorts:
+        - ports:
+            - port: "4020"
+              protocol: TCP
+    # citation lookups (DOI, arXiv, OpenAlex) and the Zotero plugin
+    - toFQDNs:
+        - matchName: doi.org
+        - matchName: api.crossref.org
+        - matchName: data.crossref.org
+        - matchName: api.datacite.org
+        - matchName: export.arxiv.org
+        - matchName: api.openalex.org
+        - matchName: api.zotero.org
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+---
+# LaTeX is untrusted input: the compiler only answers the app and has no
+# egress beyond the baseline's DNS.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: compiler
+  namespace: aldine
+spec:
+  endpointSelector:
+    matchLabels:
+      app: aldine-compiler
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app: aldine
+      toPorts:
+        - ports:
+            - port: "4020"
+              protocol: TCP
