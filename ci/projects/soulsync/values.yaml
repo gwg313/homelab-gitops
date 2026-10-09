@@ -1,0 +1,58 @@
+# CI for gwg313/soulsync_new (private): Go checks + rendered-manifest
+# validation, Shipwright image builds (ko + buildah) pushed to Harbor.
+name: soulsync
+
+repository:
+  url: https://git.gwg313.xyz/gwg313/soulsync_new
+  provider: forgejo
+  secretName: pac-git-token
+
+build:
+  enabled: true
+  # Harbor robot account for registry.gwg313.xyz/soulsync (push)
+  pushSecret: harbor-push
+  # read-only Forgejo token for Shipwright's clone of the private repo
+  cloneSecret: forgejo-clone
+
+egressFQDNs:
+  # Go modules, checksums, vulnerability DB
+  - proxy.golang.org
+  - sum.golang.org
+  - vuln.go.dev
+  - storage.googleapis.com
+  # ko download (ko strategy)
+  - github.com
+  - release-assets.githubusercontent.com
+  - objects.githubusercontent.com
+  # base images: distroless (ko), alpine and node (buildah)
+  - gcr.io
+  - registry-1.docker.io
+  - auth.docker.io
+  - production.cloudflare.docker.com
+  # frontend and enrichment-base package installs
+  - registry.npmjs.org
+  - dl-cdn.alpinelinux.org
+
+resources:
+  ci:
+    # go-test / golangci-lint request up to 3Gi each and run in parallel
+    quota:
+      requests.cpu: "4"
+      requests.memory: 8Gi
+      limits.cpu: "12"
+      limits.memory: 24Gi
+      pods: "20"
+    max:
+      cpu: "2"
+      memory: 3Gi
+  build:
+    # up to 9 image builds per run (ko: 2 CPU / 3Gi limit each)
+    quota:
+      requests.cpu: "4"
+      requests.memory: 8Gi
+      limits.cpu: "8"
+      limits.memory: 16Gi
+      pods: "8"
+    max:
+      cpu: "2"
+      memory: 4Gi
