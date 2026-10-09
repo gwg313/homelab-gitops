@@ -62,3 +62,30 @@ spec:
         - ports:
             - port: "8080"
               protocol: TCP
+---
+# Proxy-cache project `dockerhub`: harbor-core fetches from Docker Hub on a
+# cache miss (and checks the endpoint via hub.docker.com); jobservice runs
+# replication/preheat jobs against the same endpoint.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-egress-upstream-registries
+  namespace: harbor
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: component
+        operator: In
+        values: [core, jobservice]
+  egress:
+    - toFQDNs:
+        - matchName: hub.docker.com
+        - matchName: index.docker.io
+        - matchName: registry-1.docker.io
+        - matchName: auth.docker.io
+        - matchName: production.cloudflare.docker.com
+        - matchName: production.cloudfront.docker.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
