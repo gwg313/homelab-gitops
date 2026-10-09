@@ -146,11 +146,12 @@ spec:
           labels:
             ci.home.arpa/pipelinerun: "$PIPELINE_RUN"
         spec:
-          timeout: "$TIMEOUT"
           # pre-linked to the push secret by the ci-project chart
           serviceAccount: builder
           build:
             spec:
+              # BuildRun-level overrides (timeout, output, ...) are rejected with an inline build spec
+              timeout: "$TIMEOUT"
               source:
                 type: Git
                 contextDir: "$CONTEXT_DIR"
