@@ -14,6 +14,14 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: plane
+  # The chart's migrate Job is mutated by Kyverno after creation; with
+  # Replace=true Argo then tries to replace it, which Jobs never allow, and
+  # the sync retries forever. The Job only needs to exist once.
+  ignoreDifferences:
+    - group: batch
+      kind: Job
+      jqPathExpressions:
+        - .spec
   syncPolicy:
     automated:
       prune: true
@@ -21,3 +29,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - Replace=true
+      - RespectIgnoreDifferences=true
