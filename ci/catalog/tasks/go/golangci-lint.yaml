@@ -18,7 +18,8 @@ spec:
     - name: args
       type: array
       description: Arguments passed to `golangci-lint run`.
-      default: ["./..."]
+      # the built-in timeout is too short for package loading on small nodes
+      default: ["--timeout=10m", "./..."]
   volumes:
     - name: tmp
       emptyDir: {}
