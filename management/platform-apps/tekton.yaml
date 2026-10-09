@@ -13,6 +13,21 @@ spec:
     path: platform/tekton
   destination:
     server: https://kubernetes.default.svc
+  # Tekton's webhook injects its conversion config (service, CA bundle) into
+  # its CRDs and fills in defaults on Tasks. Ignore those fields so the app
+  # isn't permanently OutOfSync and syncs never strip the injected CA bundle.
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      jqPathExpressions:
+        - .spec.conversion.webhook.clientConfig
+        - .spec.preserveUnknownFields
+    - group: tekton.dev
+      kind: Task
+      jqPathExpressions:
+        - .spec.params[]?.type
+        - .spec.results[]?.type
+        - .spec.steps[]?.computeResources
   syncPolicy:
     automated:
       prune: true
@@ -20,3 +35,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
