@@ -1,30 +1,52 @@
 # CI platform
 
 Tekton Pipelines-as-Code runs pipelines, Shipwright builds images, Harbor
-stores them and Argo CD Image Updater writes new digests back to this repo.
-Everything here is deployed by Argo CD; project repositories only contain
-their code and `.tekton/` pipelines.
+stores them and Argo CD deploys them. Other build artifacts (e.g. firmware
+zips) go to Forgejo's generic package registry. Everything here is deployed by
+Argo CD; project repositories only contain their code and `.tekton/`
+pipelines.
 
 ```
 push / PR ──> PaC ──> PipelineRun (ci-<project>)
                         ├─ tekton-catalog Tasks (lint, test, ...)
                         └─ shipwright-build ──> BuildRun (build-<project>)
                                                   └─ kaniko / ko ──> Harbor
-Harbor ──> Argo CD Image Updater ──> commit to homelab-gitops ──> Argo CD sync
+                        └─ forgejo-upload ──> Forgejo packages
+new image tag ──> commit to homelab-gitops ──> Argo CD sync
 ```
+
+Rolling out a new image is still a manual commit here (soulsync: the
+Application's `targetRevision` and `kustomize.images`); Image Updater is
+deployed but not wired up yet.
 
 | Path | What |
 |------|------|
 | `platform/tekton` | Tekton Pipelines, dashboard, Pipelines-as-Code (pinned) |
-| `platform/shipwright` | Shipwright controller + `kaniko` and `ko` ClusterBuildStrategies |
+| `platform/shipwright` | Shipwright controller + `kaniko` and `ko` ClusterBuildStrategies (kaniko pulls Docker Hub images through Harbor's `dockerhub` proxy cache) |
 | `platform/argocd-image-updater` | Image Updater, Harbor registry config |
-| `ci/catalog` | Shared Tasks in `tekton-catalog` (only namespace the cluster resolver serves): git-clone, yamllint, kubeconform, gitleaks, kustomize-build, helm-template, shipwright-build |
+| `ci/catalog` | Shared Tasks in `tekton-catalog` (only namespace the cluster resolver serves), see below |
 | `ci/charts/ci-project` | Chart for a project's namespaces, SAs, RBAC, quotas, network policy, PaC Repository |
 | `ci/projects/<name>/` | One directory per project; picked up by the `ci-projects` ApplicationSet |
 
+Catalog tasks:
+
+| Task | What |
+|------|------|
+| `git-clone` | Clone a revision into the workspace |
+| `yamllint`, `kubeconform`, `gitleaks` | YAML lint, manifest schema validation, secret scan |
+| `kustomize-build`, `helm-template` | Render every kustomization / chart |
+| `go-test`, `golangci-lint`, `govulncheck` | Go checks |
+| `pnpm` | Install with pnpm and run package.json scripts (lint, test, ...) |
+| `shipwright-build` | Create a BuildRun and wait for it (needs the `build-trigger` SA) |
+| `content-tag` | Tag from a hash of some files + whether the registry has it, to rebuild toolchain images only when their inputs change |
+| `zmk-build` | Build ZMK keyboard firmware (.uf2) for a board/shield |
+| `archive` | Zip a directory |
+| `forgejo-upload` | Upload a file to Forgejo's generic package registry |
+
 `helm-template` renders every chart it finds; a chart that needs values to
 render can ship a `ci-values.yaml` next to its `Chart.yaml`. This repository's
-own CI is `ci/projects/homelab-gitops` + `.tekton/ci.yaml`.
+own CI is `ci/projects/homelab-gitops` + `.tekton/ci.yaml`. Other projects:
+`soulsync` (Go/Next.js, 9 images) and `zmk-configs` (firmware zip on Forgejo).
 
 ## Security model
 
@@ -51,7 +73,8 @@ own CI is `ci/projects/homelab-gitops` + `.tekton/ci.yaml`.
    repository:
      url: https://git.gwg313.xyz/gwg313/myapp   # as the provider reports it
      provider: forgejo                          # or github
-   # egressFQDNs: [proxy.golang.org]            # only if a proxy-cache won't do
+   # egressFQDNs: [proxy.golang.org]            # package registries etc.; Docker Hub
+   #                                            # images come through Harbor
    ```
 
 3. Seal the secrets into the same directory:
@@ -124,8 +147,8 @@ own CI is `ci/projects/homelab-gitops` + `.tekton/ci.yaml`.
              - { name: image, value: "registry.gwg313.xyz/myapp/myapp:{{ revision }}" }
    ```
 
-6. Add an `ImageUpdater` resource for the app's Argo CD Application so new
-   digests get committed back here.
+6. Deploy the app with an Argo CD Application under
+   `management/platform-apps/` that references the built image tag.
 
 ## Not done yet / verify on first use
 
