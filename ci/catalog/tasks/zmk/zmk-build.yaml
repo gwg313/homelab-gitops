@@ -67,6 +67,10 @@ spec:
           value: "1"
         - name: CCACHE_DISABLE
           value: "1"
+        # Zephyr's toolchain capability cache; it otherwise falls back to
+        # $ZEPHYR_BASE/.cache, inside the read-only image
+        - name: XDG_CACHE_HOME
+          value: /tmp/.cache
         # the west workspace in the image belongs to root; let git read it
         # (Zephyr runs git describe for version info)
         - name: GIT_CONFIG_COUNT
@@ -101,6 +105,7 @@ spec:
         zephyr_base=${ZEPHYR_BASE:-/zmk/zephyr}
         west build -p always -s zmk/app -d /tmp/build -b "$BOARD" -- \
           -DZephyr_DIR="$zephyr_base/share/zephyr-package/cmake" \
+          -DUSER_CACHE_DIR=/tmp/.cache/zephyr \
           ${SHIELD:+-DSHIELD="$SHIELD"} -DZMK_CONFIG="$CONFIG_DIR" "$@"
         mkdir -p "$OUTPUT_DIR"
         cp /tmp/build/zephyr/zmk.uf2 "$OUTPUT_DIR/$name.uf2"
