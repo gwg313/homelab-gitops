@@ -63,4 +63,15 @@ spec:
         - ports:
             - port: "443"
               protocol: TCP
+    # The gateway's Envoy also checks this namespace's egress against the
+    # backend it proxies to, so harbor-core itself must be allowed.
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: harbor
+            app: harbor
+            component: core
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
 {{- end }}
