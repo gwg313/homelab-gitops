@@ -8,6 +8,14 @@ kyverno:
       enabled: false
     backgroundScan:
       backgroundScanInterval: 12h
+    # PolicyViolation events from background scans (one per non-compliant
+    # resource, re-sent on every controller restart) flooded etcd with
+    # 160k+ events; violations stay visible in the policy reports.
+    omitEvents:
+      eventTypes:
+        - PolicyApplied
+        - PolicySkipped
+        - PolicyViolation
 
   backgroundController:
     resources:
