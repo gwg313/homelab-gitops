@@ -4,7 +4,7 @@ metadata:
   name: kyverno-policies
   namespace: argocd
   annotations:
-    argoproj.io/sync-wave: "-5"
+    argocd.argoproj.io/sync-wave: "-5"
 spec:
   project: default
   source:

@@ -4,7 +4,7 @@ metadata:
   name: tetragon-core
   namespace: argocd
   annotations:
-    argoproj.io/sync-wave: "-10"
+    argocd.argoproj.io/sync-wave: "-10"
 spec:
   project: default
   source:
