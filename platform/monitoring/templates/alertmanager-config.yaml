@@ -1,0 +1,98 @@
+# ----------------------------------------------------
+# Alertmanager routing, used as the global config via
+# alertmanagerSpec.alertmanagerConfiguration in values.yaml.
+# Alertmanager template strings are wrapped in raw Helm strings so Helm
+# passes them through untouched.
+# ----------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-templates
+  namespace: monitoring
+data:
+  discord.tmpl: |
+    {{- .Files.Get "files/discord.tmpl" | nindent 4 }}
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: alertmanager-main
+  namespace: monitoring
+spec:
+  route:
+    receiver: discord
+    groupBy: [alertname, namespace]
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 12h
+    routes:
+      # Watchdog is the always-firing dead man's switch and InfoInhibitor
+      # exists only to drive the inhibit rule below; neither is actionable.
+      - receiver: "null"
+        matchers:
+          - name: alertname
+            matchType: "=~"
+            value: Watchdog|InfoInhibitor
+      - receiver: discord-critical
+        matchers:
+          - name: severity
+            matchType: "="
+            value: critical
+
+  # Same rules the chart ships by default. Info alerts such as
+  # CPUThrottlingHigh only get through when something worse is already
+  # firing in the same namespace.
+  inhibitRules:
+    - sourceMatch:
+        - name: severity
+          matchType: "="
+          value: critical
+      targetMatch:
+        - name: severity
+          matchType: "=~"
+          value: warning|info
+      equal: [namespace, alertname]
+    - sourceMatch:
+        - name: severity
+          matchType: "="
+          value: warning
+      targetMatch:
+        - name: severity
+          matchType: "="
+          value: info
+      equal: [namespace, alertname]
+    - sourceMatch:
+        - name: alertname
+          matchType: "="
+          value: InfoInhibitor
+      targetMatch:
+        - name: severity
+          matchType: "="
+          value: info
+      equal: [namespace]
+    - targetMatch:
+        - name: alertname
+          matchType: "="
+          value: InfoInhibitor
+
+  receivers:
+    - name: "null"
+    - name: discord
+      discordConfigs:
+        - sendResolved: true
+          apiURL:
+            name: alertmanager-discord-webhook
+            key: url
+          title: {{` '{{ template "discord.title" . }}' `}}
+          message: {{` '{{ template "discord.message" . }}' `}}
+    # Same channel, but pings @here so critical alerts stand out from
+    # warnings.
+    - name: discord-critical
+      discordConfigs:
+        - sendResolved: true
+          apiURL:
+            name: alertmanager-discord-webhook
+            key: url
+          content: {{` '{{ if eq .Status "firing" }}@here{{ end }}' `}}
+          title: {{` '{{ template "discord.title" . }}' `}}
+          message: {{` '{{ template "discord.message" . }}' `}}

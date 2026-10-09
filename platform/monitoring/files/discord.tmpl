@@ -1,0 +1,14 @@
+{{ define "discord.title" -}}
+[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}{{ with .CommonLabels.namespace }} in {{ . }}{{ end }}
+{{- end }}
+
+{{ define "discord.message" -}}
+{{ range .Alerts -}}
+{{ if eq .Status "firing" }}🔥{{ else }}✅{{ end }} **{{ .Labels.alertname }}**{{ with .Labels.severity }} ({{ . }}){{ end }}
+{{ with .Annotations.description }}{{ . }}{{ else }}{{ .Annotations.summary }}{{ end }}
+{{ range .Labels.SortedPairs }}{{ if not (eq .Name "alertname" "severity" "prometheus") }}`{{ .Name }}={{ .Value }}` {{ end }}{{ end }}
+{{ if eq .Status "firing" }}Since <t:{{ .StartsAt.Unix }}:R>{{ else }}Resolved <t:{{ .EndsAt.Unix }}:R>{{ end }}{{ with .Annotations.runbook_url }} · [runbook]({{ . }}){{ end }}
+
+{{ end }}
+{{- end }}
+
