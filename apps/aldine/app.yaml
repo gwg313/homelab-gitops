@@ -53,6 +53,10 @@ spec:
             # client IPs come from the gateway's X-Forwarded-For
             - name: TRUST_PROXY
               value: "1"
+          envFrom:
+            # ALDINE_ADMIN_EMAILS: accounts that may open /admin
+            - secretRef:
+                name: aldine-admin
           readinessProbe:
             httpGet:
               path: /api/health

@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - storage.yaml
+  - admin-sealed.yaml
   - network-policy.yaml
   - compiler.yaml
   - app.yaml

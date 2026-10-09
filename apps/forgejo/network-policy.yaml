@@ -31,6 +31,16 @@ spec:
         - ports:
             - port: "3000"
               protocol: TCP
+    # Aldine's Forgejo sync (through the shared gateway, checked against the
+    # Aldine pod)
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: aldine
+            app: aldine
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
     # CI pipelines and image builds (namespaces from ci/charts/ci-project)
     - fromEndpoints:
         - matchLabels:

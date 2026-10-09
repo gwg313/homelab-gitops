@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: aldine-admin
+  namespace: aldine
+spec:
+  encryptedData:
+    ALDINE_ADMIN_EMAILS: AgAzO5uDvbWRvn9ERuJ5ZYswdBERV759Vx6aIWZ512VKqkdauAhvszUa7tUCihUNQe4mYY7agp9/qPoJ/8WcSDLnW0L9P8cwFBJxiUMSQtjHExRGl2+ayeDyQAzoeZBwFn9WF/tOR1g+BrIz4BRER0BwSKZCyHSoEb0f6fZmhuvlmCP5d2d1zIIxOj9KkG9CxAK4DiZcCVS7DwHzb4QBYPADzjJnpHuipVqzq5mKKkLnota4JlcXMXLuNAzjVBxWWgQ2P1+7DI60VtxWNzUijeDwYG6FSi9m3i1zd4mGjJdkyHk6e2KwS4kwmpNb+2yV9Cg1YAJVp9rh6T00jj9CAEdHaoYKIhbc5Pq/QtX2SigvS9KuFtjASa1jNDkXunL0wEQoOIOLlVUplBUgAVCIzC+n/sh31B6wgHKSaQXSVcw9+wurJLiGvDD7ypYTxknsDP06o2M9m+7OncmU1UDBOnR/wQKMKyyuLwzBM1aiXrP3V+vwNnWU5CzT59He9Ns25ixJXRbg5tU+yHwXC/nvGVmx5CP9B1JpO3AwdwMZZ9ZMIxWeazyGDyUofVhzGA7/Wjrauh6gDXFz4h52mjqj5ir2PBCUhR+kb0q1lwJlq0+nayGoMGCMOHwpikk0I7Zj39j/BbLru7F3OaiV2sYgaLJFAEk/a1G+1UfyB5F7HYvcnsrr2FbRUWZX7otsvpKAVVt2LxdqXnIQwDYxrXE=
+  template:
+    metadata:
+      name: aldine-admin
+      namespace: aldine

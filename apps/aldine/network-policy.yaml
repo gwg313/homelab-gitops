@@ -24,6 +24,32 @@ spec:
         - ports:
             - port: "4020"
               protocol: TCP
+    # Forgejo sync via https://git.gwg313.xyz. The shared gateway's Envoy runs
+    # in the Cilium agent and policy is checked against this pod, so the
+    # Forgejo pod itself must be allowed too (and Forgejo must admit us).
+    - toEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: forgejo
+            app: forgejo
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+    # Forgejo (public hostname) and GitHub sync: API and git over https
+    - toFQDNs:
+        - matchName: git.gwg313.xyz
+        - matchName: github.com
+        - matchName: api.github.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
     # citation lookups (DOI, arXiv, OpenAlex) and the Zotero plugin
     - toFQDNs:
         - matchName: doi.org
