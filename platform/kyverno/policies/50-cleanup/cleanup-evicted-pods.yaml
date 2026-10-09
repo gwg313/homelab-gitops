@@ -11,7 +11,8 @@ spec:
 
   conditions:
     all:
-      - key: "{{ target.status.reason }}"
+      # most pods have no status.reason; default it so the condition doesn't error
+      - key: "{{ target.status.reason || '' }}"
         operator: Equals
         value: Evicted
 
