@@ -48,3 +48,13 @@ spec:
               protocol: TCP
             - port: "8080"
               protocol: TCP
+    # CI image builds (ci/charts/ci-project build-* namespaces). They reach
+    # registry.gwg313.xyz through the shared gateway, but Cilium enforces
+    # this policy against the original pod, not the gateway.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.ci.home.arpa/role: build
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
