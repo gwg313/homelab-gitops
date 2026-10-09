@@ -92,6 +92,10 @@ spec:
         # west finds its workspace from the current directory; the build
         # directory goes to the pod-local volume (the image is read-only)
         cd /zmk
+        # west records zephyr.base in the workspace config on first use; the
+        # image is read-only here, so use a writable copy
+        cp .west/config /tmp/west-config
+        export WEST_CONFIG_LOCAL=/tmp/west-config
         west build -p always -s zmk/app -d /tmp/build -b "$BOARD" -- \
           ${SHIELD:+-DSHIELD="$SHIELD"} -DZMK_CONFIG="$CONFIG_DIR" "$@"
         mkdir -p "$OUTPUT_DIR"
