@@ -1,0 +1,24 @@
+# Argo CD itself is installed outside this repo; this only sets the
+# application controller's resources (server-side apply merges it into the
+# existing StatefulSet). Without it the Kyverno defaults (200m / 512Mi)
+# applied and the controller was OOMKilled in a loop.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: argocd-application-controller
+  namespace: argocd
+  annotations:
+    # never delete the real controller if this file or the app goes away
+    argocd.argoproj.io/sync-options: Delete=false,Prune=false
+spec:
+  template:
+    spec:
+      containers:
+        - name: argocd-application-controller
+          resources:
+            requests:
+              cpu: 250m
+              memory: 1Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
