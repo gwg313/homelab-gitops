@@ -90,8 +90,12 @@ spec:
           value: $(params.clone-secret)
         - name: TIMEOUT
           value: $(params.timeout)
+        # $(context.pipelineRun.name) isn't substituted inside Task specs; read
+        # the label Tekton puts on the pod instead (empty for standalone runs)
         - name: PIPELINE_RUN
-          value: $(context.pipelineRun.name)
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tekton.dev/pipelineRun']
       args: ["$(params.strategy-params[*])"]
       script: |
         #!/bin/sh
