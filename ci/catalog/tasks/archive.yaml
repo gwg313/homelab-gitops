@@ -1,0 +1,61 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: archive
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Zip the files of a workspace directory (flat, sorted, without the
+    directory itself) into a single archive in the workspace.
+  workspaces:
+    - name: source
+  params:
+    - name: source-dir
+      type: string
+      description: Directory whose files are archived, relative to the workspace.
+    - name: output
+      type: string
+      description: Path of the zip to create, relative to the workspace.
+  results:
+    - name: path
+      description: Path of the archive, relative to the workspace.
+  steps:
+    - name: zip
+      image: docker.io/library/python:3.13.16-slim-trixie@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+      env:
+        - name: SOURCE_DIR
+          value: $(params.source-dir)
+        - name: OUTPUT
+          value: $(params.output)
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+      script: |
+        #!/usr/bin/env python3
+        import os, sys, zipfile
+        src, out = os.environ["SOURCE_DIR"], os.environ["OUTPUT"]
+        files = sorted(f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f)))
+        if not files:
+            sys.exit(f"no files in {src}")
+        os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+            for f in files:
+                z.write(os.path.join(src, f), arcname=f)
+                print(f"  {f}")
+        print(f"wrote {out} ({os.path.getsize(out)} bytes, {len(files)} files)")
+        with open("$(results.path.path)", "w") as r:
+            r.write(out)

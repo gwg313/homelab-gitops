@@ -1,0 +1,90 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: zmk-build
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Build ZMK firmware for one board/shield of a zmk-config repository and copy
+    the .uf2 to an output directory in the workspace. Expects the west
+    workspace from zmk-west-update. Run it in a matrix for several halves or
+    keyboards; each writes <shield>-<board>.uf2.
+  workspaces:
+    - name: source
+  params:
+    - name: board
+      type: string
+      description: Zephyr board, e.g. nice_nano_v2.
+    - name: shield
+      type: string
+      description: ZMK shield, e.g. corne_left. Empty for boards without a shield.
+      default: ""
+    - name: config-dir
+      type: string
+      description: The zmk-config directory (keymaps, .conf, boards/), relative to the workspace.
+      default: config
+    - name: output-dir
+      type: string
+      description: Directory the .uf2 is copied to, relative to the workspace.
+      default: firmware
+    - name: cmake-args
+      type: array
+      description: Extra CMake arguments, e.g. -DCONFIG_ZMK_STUDIO=y.
+      default: []
+    - name: image
+      type: string
+      description: ZMK build image; must match the one zmk-west-update used.
+      default: docker.io/zmkfirmware/zmk-build-arm:3.5@sha256:0979a8de325e3d822e48bd8d1d9efaee2984ad3750253119f920a342f0ce5cde
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: build
+      image: $(params.image)
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 1536Mi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: HOME
+          value: /tmp
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+        - name: CCACHE_DISABLE
+          value: "1"
+        - name: BOARD
+          value: $(params.board)
+        - name: SHIELD
+          value: $(params.shield)
+        - name: CONFIG_DIR
+          value: $(workspaces.source.path)/$(params.config-dir)
+        - name: OUTPUT_DIR
+          value: $(workspaces.source.path)/$(params.output-dir)
+      args: ["$(params.cmake-args[*])"]
+      script: |
+        #!/bin/sh
+        set -eu
+        name="${SHIELD:+$SHIELD-}$BOARD"
+        echo "::: building $name"
+        # registers Zephyr's CMake package under $HOME, which is per pod
+        west zephyr-export
+        # the build directory goes to the pod-local volume, not the workspace
+        west build -p always -s zmk/app -d /tmp/build -b "$BOARD" -- \
+          ${SHIELD:+-DSHIELD="$SHIELD"} -DZMK_CONFIG="$CONFIG_DIR" "$@"
+        mkdir -p "$OUTPUT_DIR"
+        cp /tmp/build/zephyr/zmk.uf2 "$OUTPUT_DIR/$name.uf2"
+        ls -l "$OUTPUT_DIR/$name.uf2"

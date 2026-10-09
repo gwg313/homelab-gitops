@@ -1,0 +1,108 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: forgejo-upload
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Upload a workspace file to Forgejo's generic package registry as
+    <owner>/<package>/<version>/<filename>. The token comes from a Secret in
+    the PipelineRun's namespace and needs the package write scope. Uses the
+    in-cluster Forgejo service, which CI namespaces may reach.
+  workspaces:
+    - name: source
+  params:
+    - name: owner
+      type: string
+      description: Forgejo user or organisation that owns the package.
+    - name: package
+      type: string
+      description: Package name.
+    - name: version
+      type: string
+      description: Package version, e.g. a commit SHA or tag.
+    - name: file
+      type: string
+      description: File to upload, relative to the workspace.
+    - name: filename
+      type: string
+      description: Name in the registry. Empty uses the file's base name.
+      default: ""
+    - name: token-secret
+      type: string
+      description: Secret holding the Forgejo token.
+      default: forgejo-packages
+    - name: token-key
+      type: string
+      description: Key of the token in the Secret.
+      default: token
+    - name: forgejo-url
+      type: string
+      description: Forgejo base URL used for the upload.
+      default: http://forgejo.forgejo.svc.cluster.local
+    - name: public-url
+      type: string
+      description: Forgejo base URL used in the reported download link.
+      default: https://git.gwg313.xyz
+  results:
+    - name: url
+      description: Download URL of the uploaded file.
+  volumes:
+    - name: tmp
+      emptyDir: {}
+  steps:
+    - name: upload
+      image: docker.io/curlimages/curl:8.22.0@sha256:58adaa4e8dca9c988bae2aba4ab3434a0bb2da16bbe3f92dec39ec7785166777
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 500m
+          memory: 128Mi
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.token-secret)
+              key: $(params.token-key)
+        - name: OWNER
+          value: $(params.owner)
+        - name: PACKAGE
+          value: $(params.package)
+        - name: VERSION
+          value: $(params.version)
+        - name: FILE
+          value: $(params.file)
+        - name: FILENAME
+          value: $(params.filename)
+        - name: FORGEJO_URL
+          value: $(params.forgejo-url)
+        - name: PUBLIC_URL
+          value: $(params.public-url)
+      script: |
+        #!/bin/sh
+        set -eu
+        name=${FILENAME:-$(basename "$FILE")}
+        path="api/packages/$OWNER/generic/$PACKAGE/$VERSION/$name"
+        code=$(curl -sS -o /tmp/response -w '%{http_code}' \
+          -H "Authorization: token $TOKEN" --upload-file "$FILE" "$FORGEJO_URL/$path" 2>/dev/null || true)
+        case "$code" in
+          201) echo "uploaded $name" ;;
+          # the same version/file already exists, e.g. a re-run of the same commit
+          409) echo "$name already exists for $PACKAGE $VERSION; leaving it" ;;
+          *) echo "upload failed: HTTP $code"; cat /tmp/response 2>/dev/null; echo; exit 1 ;;
+        esac
+        printf '%s' "$PUBLIC_URL/$path" > "$(results.url.path)"
+        echo "$PUBLIC_URL/$path"
