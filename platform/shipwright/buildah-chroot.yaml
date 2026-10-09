@@ -7,6 +7,11 @@ apiVersion: shipwright.io/v1beta1
 kind: ClusterBuildStrategy
 metadata:
   name: buildah-chroot
+  annotations:
+    # apply only after the conversion webhook (wave 0) is healthy; creating a
+    # Shipwright object while the webhook is unreachable sends the API servers
+    # into a conversion-retry storm
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   parameters:
     - name: dockerfile
