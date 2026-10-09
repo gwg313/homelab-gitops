@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: harbor-push
+  namespace: build-soulsync
+spec:
+  encryptedData:
+    .dockerconfigjson: AgCUXBOC15DYOv0GUKzFAiuaM9phsm2naACuj5Hq6zSpHra5SabzKCRCbSEJyOU3Un3pEkNB0iqkQQqqBFH7Z8jtZKf89YSfbOkHs6mYyz9CbqnWq6zfgQcNrfMGos/AdTXO7r9wwVJmzEe2GXUdzVWjpUViZKZszdJtB4YqxqKRSbOU1kcH51aEo08etsBXqgIws6CJJ9mCDB7a1xZJciReqvrMGzhjqNkzha5klT9Jmi3HR+b975gEUNMa1rUiVEjkGhcPoiVuFGJr88bZtaEVOl4/QcCpThkBcxsw61zumcKcIfhPbD2DM2DqFruB4ShfM4wwzY3AS+C6wbuhLQF+vHXOQNtgUj8G9Pbb6nYRf85oEPD42GFcErTzV+9d7Ls67ut64oKz89G4N9J3ep4qxXGiMxmGviIUejRwWMnv83gQ/LcozxMjRhrz/ll1C/c2wqebDgJ2YO/DsSBwloHyRK5kANTqCVpot5L47LC6NyiMgJ/ZQKjLIgs633G73UkBSVJN4AoQjYFhO9r4dGGqHR26WLKoWK/yDEbDkEIlBj5sLyK+7wScJCxTUx3Zu8tnutZs6vMbJR7xa12Mv/2TV831K5YBuENd7sTE0nsDhoGxJ2rp5jLlgYUg7smo0hDEe4+X9FkpLyUo9tKE3k8VxMLYO1njT5TspCoHadEjgQXp1R4XhQu3uuiFcgSUVC3ZlyeYYg47mOzhXPIgfH55H4mxoGm0BA0VUNSAivgajZkZGgmuBPBGxgfSzQm/Et4ioYKBrJW8IMxb+TdqCB9qDs3dfB30iORmQpTuEYgwB9rteMWTkb+uVaAX/DwI7zLWTqPBIXsoE3EhdvAYpj6v4pZZ8nFytlTmRIs6D/YJqwpwZnZzOl2QHvSJ/Vjs52XKUGaJGCfr3ses7w1GFn7Ehu4+IAiDCOrnIvE=
+  template:
+    metadata:
+      name: harbor-push
+      namespace: build-soulsync
+    type: kubernetes.io/dockerconfigjson
