@@ -43,6 +43,12 @@ spec:
       default: ""
     - name: timeout
       default: 30m
+    - name: node-selector
+      description: >-
+        Space-separated key=value node labels the build pod must match.
+        Shipwright's helper images need x86-64-v3 CPUs, so builds default to
+        nodes labelled for it. Empty disables the selector.
+      default: cpu.home.arpa/x86-64-v3=true
   results:
     - name: image-digest
       description: Digest of the pushed image.
@@ -90,6 +96,8 @@ spec:
           value: $(params.clone-secret)
         - name: TIMEOUT
           value: $(params.timeout)
+        - name: NODE_SELECTOR
+          value: $(params.node-selector)
         # $(context.pipelineRun.name) isn't substituted inside Task specs; read
         # the label Tekton puts on the pod instead (empty for standalone runs)
         - name: PIPELINE_RUN
@@ -103,7 +111,7 @@ spec:
 
         # values are spliced into YAML below; refuse anything that could break out of a quoted scalar
         for v in "$NS" "$GIT_URL" "$REVISION" "$IMAGE" "$CONTEXT_DIR" "$DOCKERFILE" \
-                 "$STRATEGY" "$PUSH_SECRET" "$CLONE_SECRET" "$TIMEOUT" "$PIPELINE_RUN" "$@"; do
+                 "$STRATEGY" "$PUSH_SECRET" "$CLONE_SECRET" "$TIMEOUT" "$PIPELINE_RUN" "$NODE_SELECTOR" "$@"; do
           case "$v" in
             *'"'*|*'\'*|*"
         "*) echo "refusing parameter value with quote, backslash or newline" >&2; exit 1 ;;
@@ -127,6 +135,19 @@ spec:
           esac
         done
         [ -n "$param_values" ] || param_values=" []"
+
+        # nodeSelector from key=value pairs
+        node_selector=" {}"
+        if [ -n "$NODE_SELECTOR" ]; then
+          node_selector=""
+          for kv in $NODE_SELECTOR; do
+            case "$kv" in
+              ?*=*) node_selector="$node_selector
+                \"${kv%%=*}\": \"${kv#*=}\"" ;;
+              *) echo "node-selector entry is not key=value: $kv" >&2; exit 1 ;;
+            esac
+          done
+        fi
 
         # image repository without tag (tag = ':' after the last '/')
         repo="$IMAGE"
@@ -152,6 +173,7 @@ spec:
             spec:
               # BuildRun-level overrides (timeout, output, ...) are rejected with an inline build spec
               timeout: "$TIMEOUT"
+              nodeSelector:$node_selector
               source:
                 type: Git
                 contextDir: "$CONTEXT_DIR"
