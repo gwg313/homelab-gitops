@@ -20,11 +20,6 @@ data:
       - name: forgejo-api
         path_regex: ^/api/
         action: ALLOW
-      # release/attachment downloads by URL (curl, scripts)
-      - name: forgejo-downloads
-        path_regex: ^/[^/]+/[^/]+/(releases/download|archive)/
-        user_agent_regex: ^(curl|Wget|git|Go-http-client|python-requests)/
-        action: ALLOW
       # RSS/Atom feeds
       - import: (data)/apps/gitea-rss-feeds.yaml
       # upstream defaults: deny known AI scrapers, allow good search crawlers,
