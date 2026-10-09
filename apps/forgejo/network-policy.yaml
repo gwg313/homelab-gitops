@@ -18,10 +18,15 @@ spec:
         - ports:
             - port: "3000"
               protocol: TCP
+    # PaC: controller handles webhooks, watcher sets up per-run git auth and
+    # reports commit statuses; both call the Forgejo API
     - fromEndpoints:
         - matchLabels:
             io.kubernetes.pod.namespace: pipelines-as-code
             app: pipelines-as-code-controller
+        - matchLabels:
+            io.kubernetes.pod.namespace: pipelines-as-code
+            app: pipelines-as-code-watcher
       toPorts:
         - ports:
             - port: "3000"
