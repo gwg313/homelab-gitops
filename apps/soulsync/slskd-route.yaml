@@ -1,0 +1,58 @@
+# slskd's web UI through the shared gateway (soulsync_new's overlay keeps it
+# cluster-internal). gluetun's firewall already accepts port 5030
+# (FIREWALL_INPUT_PORTS); this adds the Cilium side.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: slskd
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: shared-edge-gateway
+      namespace: cilium-ingress
+  hostnames:
+    - slskd.local.gwg313.xyz
+    - slskd.gwg313.xyz
+    - slskd.zerotier.gwg313.xyz
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: slskd
+          port: 5030
+          weight: 1
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-gateway-to-slskd
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: cilium-ingress
+  to:
+    - group: ""
+      kind: Service
+      name: slskd
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: slskd-allow-gateway
+spec:
+  endpointSelector:
+    matchLabels:
+      app: slskd
+  ingress:
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "5030"
+              protocol: TCP

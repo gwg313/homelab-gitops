@@ -9,6 +9,7 @@ namespace: soulsync
 resources:
   - music-pv.yaml
   - serviceaccount.yaml
+  - slskd-route.yaml
   # harbor-pull: read-only Harbor robot for the private soulsync project
   - harbor-pull-sealed.yaml
   # soulsync-secrets: Postgres, AcoustID, slskd/Soulseek, Navidrome credentials
