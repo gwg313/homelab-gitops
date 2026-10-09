@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: forgejo-packages
+  namespace: ci-zmk-configs
+spec:
+  encryptedData:
+    token: AgByC74/ktvvkq19eAD+zs4TbCcoxucZXppuoKg2cof9lHH7fRTz+v/ERWaznP5VOpHxKa39ZSLvYjWZU897YPmb/vDX/aNhKzE8z9+5qHEoacVajWzU/37zDbk6uQSsYQjk14teEYc0L0kIYtGl7lHsPmw2ZkQvJOOXMp9mKUfkdd+Ey4jBSK0JBhucqqE5Md7lX8iQ2Tv9m4zIh3FMJN9FsmpCDdWO3nGnKohdee6ysZrA1FdlzwF5+KQsh6KgeM9zz6S+OHp5+g/Se2lbCF1zpuKtykcoAAblT/BPY98E5Z5rcqppN4Km/NaH80JbjOYquPcvEmIOXL7zaEiE18R3flIjUTJ9jH4OaB0w6mii3IQULeRbqqcTdgRzBLlp9+0WwV9eA5d0q4A9MCEcQHQzAKt7gGxO9tMbKmwN+YFfXfy8VblnXqjqZoSw1UfponiofaF02+4Ym7kycmmiN1b35N7ZEGpVDSEsofTpy1jvs6mX0lmi5teGkww1r6DHBd4qZ7IJ7morhLmGCu1B0J4XyY224NwKO1UoQ+q4NFuhJIMMLlocpaF7xQnMS16d8QokUyjygmgwXe0GH50BbgWA780AUMXzPHCPv0SpaO8TQSMkmaEFgeFaC9OwEu/0bxatUipLhGWYYIZOUzcVhGULbhBLZ0bGg/DNgLGBqa/LrAmHwDPFe53Hl6XRy96nPIG/cEWk9fqrClB0iyRfMm/tnuEQiVcOPIBEPFuLGW9+MjOsqe3ZIPaa
+  template:
+    metadata:
+      name: forgejo-packages
+      namespace: ci-zmk-configs

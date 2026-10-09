@@ -1,0 +1,16 @@
+# CI for the ZMK keyboard configs: build every board/shield and publish the
+# .uf2 files as one zip in Forgejo's generic package registry. No images, so
+# no build namespace.
+name: zmk-configs
+
+repository:
+  url: https://git.gwg313.xyz/gwg313/zmk-configs
+  provider: forgejo
+  secretName: pac-git-token
+
+build:
+  enabled: false
+
+# west update clones ZMK, Zephyr and its modules from GitHub
+egressFQDNs:
+  - github.com
