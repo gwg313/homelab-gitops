@@ -53,6 +53,14 @@ spec:
           value: "1"
         - name: CONFIG_DIR
           value: $(params.config-dir)
+        # the workspace volume is NFS, where the NAS owns every file as 1000;
+        # git refuses repositories owned by another UID unless told otherwise
+        - name: GIT_CONFIG_COUNT
+          value: "1"
+        - name: GIT_CONFIG_KEY_0
+          value: safe.directory
+        - name: GIT_CONFIG_VALUE_0
+          value: "*"
       script: |
         #!/bin/sh
         set -eu
