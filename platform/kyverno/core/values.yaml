@@ -1,4 +1,24 @@
 kyverno:
+  # Keep Kyverno's own etcd write load down: admission reports create an
+  # object per admission request, and frequent background rescans rewrite
+  # every report. Enforcement doesn't depend on either; audit results still
+  # come from the (less frequent) background scan.
+  features:
+    admissionReports:
+      enabled: false
+    backgroundScan:
+      backgroundScanInterval: 12h
+
+  backgroundController:
+    resources:
+      limits:
+        memory: 256Mi
+
+  reportsController:
+    resources:
+      limits:
+        memory: 256Mi
+
   admissionController:
     replicas: 2
     features:
