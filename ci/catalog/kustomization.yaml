@@ -14,7 +14,7 @@ resources:
   - tasks/go/golangci-lint.yaml
   - tasks/go/govulncheck.yaml
   - tasks/node/pnpm.yaml
-  - tasks/zmk/zmk-west-update.yaml
   - tasks/zmk/zmk-build.yaml
   - tasks/archive.yaml
+  - tasks/content-tag.yaml
   - tasks/forgejo-upload.yaml

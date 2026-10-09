@@ -1,6 +1,8 @@
 # CI for the ZMK keyboard configs: build every board/shield and publish the
-# .uf2 files as one zip in Forgejo's generic package registry. No images, so
-# no build namespace.
+# .uf2 files as one zip in Forgejo's generic package registry. The ZMK/Zephyr
+# west workspace is baked into an image (registry.gwg313.xyz/zmk/zmk-west,
+# tagged by the hash of west.yml + Containerfile), rebuilt only when those
+# change; firmware builds then need no network.
 name: zmk-configs
 
 repository:
@@ -9,8 +11,16 @@ repository:
   secretName: pac-git-token
 
 build:
-  enabled: false
+  enabled: true
+  # robot with push rights on the public Harbor project "zmk"
+  pushSecret: harbor-push
 
-# west update clones ZMK, Zephyr and its modules from GitHub
+# image build only: base image from Docker Hub, west update from GitHub
 egressFQDNs:
   - github.com
+  - index.docker.io
+  - registry-1.docker.io
+  - auth.docker.io
+  # Cilium's "*" matches one DNS label, so the cloudfront host is listed too
+  - "*.docker.com"
+  - production.cloudfront.docker.com

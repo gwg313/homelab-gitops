@@ -1,0 +1,101 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: content-tag
+  namespace: tekton-catalog
+spec:
+  description: >-
+    Derive an image tag from the content of some workspace files (sha256 over
+    their paths and bytes) and check whether the registry already has that
+    image. Lets a pipeline rebuild an image (e.g. a toolchain or dependency
+    image) only when its inputs change. The repository must allow anonymous
+    pulls (public Harbor project).
+  workspaces:
+    - name: source
+  params:
+    - name: files
+      type: array
+      description: Files that define the image, relative to the workspace.
+    - name: repository
+      type: string
+      description: Image repository without tag, e.g. registry.gwg313.xyz/zmk/zmk-west.
+  results:
+    - name: tag
+      description: Content hash tag (first 20 hex digits of the sha256).
+    - name: image
+      description: repository:tag
+    - name: exists
+      description: '"true" if the registry already has the image, else "false".'
+  steps:
+    - name: tag
+      image: docker.io/library/python:3.13.16-slim-trixie@sha256:70729b46c69b4f1e97c4822c1af3df53a1476cf5ddc6c087c0c10bc3a5678c2f
+      workingDir: $(workspaces.source.path)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      computeResources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 128Mi
+      env:
+        - name: REPOSITORY
+          value: $(params.repository)
+        - name: PYTHONDONTWRITEBYTECODE
+          value: "1"
+      args: ["$(params.files[*])"]
+      script: |
+        #!/usr/bin/env python3
+        import hashlib, json, os, sys, urllib.error, urllib.parse, urllib.request
+
+        h = hashlib.sha256()
+        for path in sorted(sys.argv[1:]):
+            h.update(path.encode() + b"\0")
+            with open(path, "rb") as f:
+                h.update(f.read() + b"\0")
+        tag = h.hexdigest()[:20]
+        repo = os.environ["REPOSITORY"]
+        image = f"{repo}:{tag}"
+
+        # anonymous registry v2 check: Bearer token from the WWW-Authenticate
+        # challenge, then HEAD the manifest
+        host, _, name = repo.partition("/")
+        url = f"https://{host}/v2/{name}/manifests/{tag}"
+        accept = ", ".join([
+            "application/vnd.oci.image.index.v1+json",
+            "application/vnd.oci.image.manifest.v1+json",
+            "application/vnd.docker.distribution.manifest.v2+json",
+            "application/vnd.docker.distribution.manifest.list.v2+json",
+        ])
+
+        def head(headers):
+            req = urllib.request.Request(url, method="HEAD", headers={"Accept": accept, **headers})
+            try:
+                return urllib.request.urlopen(req, timeout=30).status
+            except urllib.error.HTTPError as e:
+                return e
+
+        r = head({})
+        if not isinstance(r, int) and r.code == 401:
+            challenge = r.headers.get("WWW-Authenticate", "")
+            params = dict(p.split("=", 1) for p in challenge.split(" ", 1)[1].replace('"', "").split(","))
+            q = urllib.parse.urlencode({"service": params.get("service", ""), "scope": f"repository:{name}:pull"})
+            token = json.load(urllib.request.urlopen(f"{params['realm']}?{q}", timeout=30))["token"]
+            r = head({"Authorization": f"Bearer {token}"})
+        if isinstance(r, int):
+            exists = "true"
+        elif r.code in (401, 404):
+            exists = "false"
+        else:
+            sys.exit(f"registry check failed: HTTP {r.code}")
+
+        print(f"{image} exists={exists}")
+        for result, value in (("tag", tag), ("image", image), ("exists", exists)):
+            with open(f"/tekton/results/{result}", "w") as f:
+                f.write(value)

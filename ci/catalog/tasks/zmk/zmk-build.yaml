@@ -6,12 +6,18 @@ metadata:
 spec:
   description: >-
     Build ZMK firmware for one board/shield of a zmk-config repository and copy
-    the .uf2 to an output directory in the workspace. Expects the west
-    workspace from zmk-west-update. Run it in a matrix for several halves or
-    keyboards; each writes <shield>-<board>.uf2.
+    the .uf2 to an output directory in the workspace. The image must contain
+    the west workspace (ZMK, Zephyr, modules) at /zmk with ZEPHYR_BASE set, e.g.
+    zmk-build-arm plus `west init -l config && west update` from the config's
+    west.yml (see content-tag for rebuilding it only when west.yml changes).
+    Run it in a matrix for several halves or keyboards; each writes
+    <shield>-<board>.uf2.
   workspaces:
     - name: source
   params:
+    - name: image
+      type: string
+      description: Image with the west workspace at /zmk.
     - name: board
       type: string
       description: Zephyr board, e.g. nice_nano_v2.
@@ -31,17 +37,12 @@ spec:
       type: array
       description: Extra CMake arguments, e.g. -DCONFIG_ZMK_STUDIO=y.
       default: []
-    - name: image
-      type: string
-      description: ZMK build image; must match the one zmk-west-update used.
-      default: docker.io/zmkfirmware/zmk-build-arm:3.5@sha256:0979a8de325e3d822e48bd8d1d9efaee2984ad3750253119f920a342f0ce5cde
   volumes:
     - name: tmp
       emptyDir: {}
   steps:
     - name: build
       image: $(params.image)
-      workingDir: $(workspaces.source.path)
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -66,18 +67,14 @@ spec:
           value: "1"
         - name: CCACHE_DISABLE
           value: "1"
-        # the workspace volume is NFS, where the NAS owns every file as 1000;
-        # git refuses repositories owned by another UID unless told otherwise
+        # the west workspace in the image belongs to root; let git read it
+        # (Zephyr runs git describe for version info)
         - name: GIT_CONFIG_COUNT
           value: "1"
         - name: GIT_CONFIG_KEY_0
           value: safe.directory
         - name: GIT_CONFIG_VALUE_0
           value: "*"
-        # instead of west zephyr-export, which raced when several builds ran
-        # it against the shared checkout at once
-        - name: ZEPHYR_BASE
-          value: $(workspaces.source.path)/zephyr
         - name: BOARD
           value: $(params.board)
         - name: SHIELD
@@ -92,7 +89,9 @@ spec:
         set -eu
         name="${SHIELD:+$SHIELD-}$BOARD"
         echo "::: building $name"
-        # the build directory goes to the pod-local volume, not the workspace
+        # west finds its workspace from the current directory; the build
+        # directory goes to the pod-local volume (the image is read-only)
+        cd /zmk
         west build -p always -s zmk/app -d /tmp/build -b "$BOARD" -- \
           ${SHIELD:+-DSHIELD="$SHIELD"} -DZMK_CONFIG="$CONFIG_DIR" "$@"
         mkdir -p "$OUTPUT_DIR"

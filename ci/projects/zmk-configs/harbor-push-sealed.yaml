@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: harbor-push
+  namespace: build-zmk-configs
+spec:
+  encryptedData:
+    .dockerconfigjson: AgCl91+42Aev71HV+olsUPQPELkrNBT1hfcmUS/7KaqH4yfSdvXSQ9sDc1Z6tolCQpyh+x5Ijf4qmyOgXCLusWVOQVGMCN9Y10ArDHK4IRCWKoQbi7VsAZHkUNvQcTR/tavzQMere7zdyKSYhxEvGVuEMmijexbrusHUXj/k1LnjLu+Nihf7d1ZBFXIPx6EqiTKvjSedoMHMznqlT3We/b6FgPz4VGL1lslefE5yUCHkbBlJ+BYnL1JZAQe25YMlkf1mSR0+qsePeH09UxqcPGOZmt+ubKndVMJ/gQ+248kv0If6idcKRhhqOhl7nL5wSe1g3qmizWhXxLiTY8Bi6E4pzCTRpxptOBlgRXdf/TdOw4xgPwUTmARiPLgSjIw2zs+NLF6kzmw2uKZxLtVIEbx6+R0lUbpZ8stpiKsyGInXAGRfseG70Bbul533lC+4Fo+Z8L+zLd7T1Y2sdteYyhcExcwsJz6b/L6+lVQBuQPJbfcBbNKmBXFrmGjR1WaSx5SE50iz2Xn4AgwLl5w6JwCKUyrjWyyvgaLOglPBs/udWcwHBFxukXXPeFiW/koM03wNSRwoXpBs2gthZRAuxmOqnRfqhLsDRKR7pY0eNO4VmTpS+rwfQXA47xTdrTcO0086TUCmKB+EG/lbzzTE3T+R1MCMejtxbWCh7Vj6fhSRQtaUq+OevZGAzIUZb2gu1Pw0wcLxt7cw9S6hq2zccEtBWShhKhrg39cV9AuB5KjJbwVWa4/xc7HhsADoEZYtiiH5GpMIPPK2qqq3Sma+1CGF9dCVYA9l8gVH9X5q33DRvaqFfEuS+ZV/P7b7bCFhsEYL9Jb5cRJgK/nPlU+btEU/ejURQwN2VWi6KXtcSmAcR5nqMxymNi36lga4l23ZEZ7apUJpg+Ge4QnuWc/5RpBAJwBuoJ1cb1fXQc7GWFjB/NFstrLw+U31IFA7ejE=
+  template:
+    metadata:
+      name: harbor-push
+      namespace: build-zmk-configs
+    type: kubernetes.io/dockerconfigjson
