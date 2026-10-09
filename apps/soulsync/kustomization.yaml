@@ -1,12 +1,17 @@
+# Cluster-specific pieces of the soulsync deployment. The workloads themselves
+# come from the app repo (soulsync_new k8s/overlays/prod); the Argo CD
+# Application in management/platform-apps/soulsync.yaml combines both.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+namespace: soulsync
+
 resources:
-  - namespace.yaml
-  - storage.yaml
-  - pvcs.yaml
-  - protonvpn-wg-sealed.yaml
-  - slskd-sealed.yaml
-  - network-policy.yaml
-  - deployment.yaml
-  - service.yaml
-  - route.yaml
+  - music-pv.yaml
+  - serviceaccount.yaml
+  # harbor-pull: read-only Harbor robot for the private soulsync project
+  - harbor-pull-sealed.yaml
+  # soulsync-secrets: Postgres, AcoustID, slskd/Soulseek, Navidrome credentials
+  - soulsync-secrets-sealed.yaml
+  # gluetun-secrets: ProtonVPN WireGuard private key
+  - gluetun-secrets-sealed.yaml

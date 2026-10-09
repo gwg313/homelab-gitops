@@ -17,10 +17,11 @@ spec:
         - ports:
             - port: "4533"
               protocol: TCP
+    # soulsync's library service triggers rescans after imports
     - fromEndpoints:
         - matchLabels:
-            io.kubernetes.pod.namespace: slskd
-            app: slskd
+            k8s:io.kubernetes.pod.namespace: soulsync
+            app: library
       toPorts:
         - ports:
             - port: "4533"

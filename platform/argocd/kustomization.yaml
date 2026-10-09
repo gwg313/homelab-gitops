@@ -5,3 +5,5 @@ resources:
   - argocd-cm-patch.yaml
   - application-controller-resources.yaml
   - namespace.yaml
+  # read access to the private soulsync_new repo on Forgejo
+  - repo-soulsync-new-sealed.yaml

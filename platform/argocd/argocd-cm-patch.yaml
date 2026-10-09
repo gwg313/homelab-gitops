@@ -3,4 +3,7 @@ kind: ConfigMap
 metadata:
   name: argocd-cm
   namespace: argocd
-data: {}
+data:
+  # soulsync_new's overlay builds migrations ConfigMaps from files outside the
+  # kustomization directory (../../migrations)
+  kustomize.buildOptions: --load-restrictor LoadRestrictionsNone

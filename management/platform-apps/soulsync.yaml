@@ -1,3 +1,10 @@
+# SoulSync: workloads from the app repo's prod overlay, cluster-specific
+# resources (sealed secrets, music PV) from apps/soulsync here.
+#
+# Deploy a new version by setting targetRevision and every image tag to the
+# commit SHA (CI pushes registry.gwg313.xyz/soulsync/<name>:<sha> on each push
+# to main). Pinning the manifests to the same commit keeps them in step with
+# the images.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -7,17 +14,29 @@ metadata:
     argocd.argoproj.io/sync-wave: "0"
 spec:
   project: default
-  source:
-    repoURL: https://github.com/gwg313/homelab-gitops.git
-    targetRevision: main
-    path: apps/soulsync
+  sources:
+    - repoURL: https://git.gwg313.xyz/gwg313/soulsync_new.git
+      targetRevision: d11ebf0688ed351d99c374d659fcc374df97e4c4
+      path: k8s/overlays/prod
+      kustomize:
+        images:
+          - soulsync/gateway=registry.gwg313.xyz/soulsync/gateway:7125947d7e4475b21cf37dad06a5860776d1f32d
+          - soulsync/sources=registry.gwg313.xyz/soulsync/sources:7125947d7e4475b21cf37dad06a5860776d1f32d
+          - soulsync/discovery=registry.gwg313.xyz/soulsync/discovery:7125947d7e4475b21cf37dad06a5860776d1f32d
+          - soulsync/scanner=registry.gwg313.xyz/soulsync/scanner:7125947d7e4475b21cf37dad06a5860776d1f32d
+          - soulsync/enrichment=registry.gwg313.xyz/soulsync/enrichment:7125947d7e4475b21cf37dad06a5860776d1f32d
+          - soulsync/downloader=registry.gwg313.xyz/soulsync/downloader:7125947d7e4475b21cf37dad06a5860776d1f32d
+          - soulsync/library=registry.gwg313.xyz/soulsync/library:7125947d7e4475b21cf37dad06a5860776d1f32d
+          - soulsync/frontend=registry.gwg313.xyz/soulsync/frontend:7125947d7e4475b21cf37dad06a5860776d1f32d
+    - repoURL: https://github.com/gwg313/homelab-gitops.git
+      targetRevision: main
+      path: apps/soulsync
   destination:
     server: https://kubernetes.default.svc
-    namespace: slskd
+    namespace: soulsync
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
       - ServerSideApply=true

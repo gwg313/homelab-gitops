@@ -1,0 +1,20 @@
+# The NAS music library (same export Navidrome reads). The soulsync manifests
+# (soulsync_new k8s/overlays/prod) claim it as soulsync/music-library.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: music-library
+spec:
+  capacity:
+    storage: 1Ti
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  nfs:
+    path: /mnt/tank/media/music
+    server: truenas.local.gwg313.xyz
+  claimRef:
+    namespace: soulsync
+    name: music-library
