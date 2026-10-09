@@ -37,6 +37,9 @@ egressFQDNs:
   # frontend and enrichment-base package installs
   - registry.npmjs.org
   - dl-cdn.alpinelinux.org
+  # next/font/google downloads fonts during the frontend build
+  - fonts.googleapis.com
+  - fonts.gstatic.com
 
 resources:
   ci:
