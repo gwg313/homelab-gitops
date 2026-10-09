@@ -14,7 +14,6 @@ resources:
   - audiobookshelf.yaml
   - yopass.yaml
   - tekton.yaml
-  - homelab-gitops.yaml
   - ci-catalog.yaml
   - shipwright.yaml
   - ci-projects.yaml

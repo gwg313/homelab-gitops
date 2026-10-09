@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: cicd
-  labels:
-    app.kubernetes.io/name: cicd
-    app.kubernetes.io/part-of: tekton
-    app.kubernetes.io/managed-by: argocd

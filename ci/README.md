@@ -18,9 +18,13 @@ Harbor ──> Argo CD Image Updater ──> commit to homelab-gitops ──> Ar
 | `platform/tekton` | Tekton Pipelines, dashboard, Pipelines-as-Code (pinned) |
 | `platform/shipwright` | Shipwright controller + `buildah-chroot` ClusterBuildStrategy |
 | `platform/argocd-image-updater` | Image Updater, Harbor registry config |
-| `ci/catalog` | Shared Tasks in `tekton-catalog` (only namespace the cluster resolver serves) |
+| `ci/catalog` | Shared Tasks in `tekton-catalog` (only namespace the cluster resolver serves): git-clone, yamllint, kubeconform, gitleaks, kustomize-build, helm-template, shipwright-build |
 | `ci/charts/ci-project` | Chart for a project's namespaces, SAs, RBAC, quotas, network policy, PaC Repository |
 | `ci/projects/<name>/` | One directory per project; picked up by the `ci-projects` ApplicationSet |
+
+`helm-template` renders every chart it finds; a chart that needs values to
+render can ship a `ci-values.yaml` next to its `Chart.yaml`. This repository's
+own CI is `ci/projects/homelab-gitops` + `.tekton/ci.yaml`.
 
 ## Security model
 

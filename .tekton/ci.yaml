@@ -1,4 +1,6 @@
 ---
+# CI for this repository (namespace ci-homelab-gitops, see ci/projects/homelab-gitops).
+# Every task comes from the shared catalog in tekton-catalog.
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -9,7 +11,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "5"
 spec:
   taskRunTemplate:
-    serviceAccountName: tekton-runner
+    serviceAccountName: pipeline
     podTemplate:
       securityContext:
         # matches git-clone's uid so every step can read the workspace
@@ -28,16 +30,13 @@ spec:
             requests:
               storage: 1Gi
   params:
-    - name: repo_url
-      value: "{{ repo_url }}"
     - name: revision
       value: "{{ revision }}"
+    # clone from in-cluster Forgejo; the pipeline has no route to the public URL
     - name: clone_url
       value: "http://forgejo.forgejo.svc.cluster.local/gwg313/homelab-gitops"
   pipelineSpec:
     params:
-      - name: repo_url
-        type: string
       - name: revision
         type: string
       - name: clone_url
@@ -46,89 +45,71 @@ spec:
       - name: source
     tasks:
       - name: clone
-        params:
-          - name: url
-            value: $(params.clone_url)
-          - name: revision
-            value: $(params.revision)
-        workspaces:
-          - name: output
-            workspace: source
         taskRef:
           resolver: cluster
           params:
-            - name: kind
-              value: task
-            - name: name
-              value: git-clone
-            - name: namespace
-              value: cicd
+            - {name: kind, value: task}
+            - {name: namespace, value: tekton-catalog}
+            - {name: name, value: git-clone}
+        params:
+          - {name: url, value: $(params.clone_url)}
+          - {name: revision, value: $(params.revision)}
+        workspaces:
+          - {name: output, workspace: source}
 
       - name: lint-yaml
         runAfter: [clone]
+        taskRef:
+          resolver: cluster
+          params:
+            - {name: kind, value: task}
+            - {name: namespace, value: tekton-catalog}
+            - {name: name, value: yamllint}
         workspaces:
-          - name: source
-            workspace: source
-        taskSpec:
-          workspaces:
-            - name: source
-          steps:
-            - name: yamllint
-              image: docker.io/pipelinecomponents/yamllint:0.35.13@sha256:5ab5eb7da0ed5e606b07c1723fc8b275e925189f70ac259b26b7329cb5f8f44d
-              workingDir: $(workspaces.source.path)
-              securityContext:
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop: [ALL]
-              command: [yamllint]
-              args: [.]
+          - {name: source, workspace: source}
 
       - name: validate
         runAfter: [clone]
+        taskRef:
+          resolver: cluster
+          params:
+            - {name: kind, value: task}
+            - {name: namespace, value: tekton-catalog}
+            - {name: name, value: kubeconform}
+        params:
+          - {name: exclude-names, value: "Taskfile.yaml devenv.yaml application-controller-resources.yaml"}
         workspaces:
-          - name: source
-            workspace: source
-        taskSpec:
-          workspaces:
-            - name: source
-          steps:
-            - name: kubeconform
-              image: ghcr.io/yannh/kubeconform:v0.8.0-alpine@sha256:6b90a5f23d846140ce0194fe050b1995e546eba938f3a6bf10c039dd5e24588f
-              workingDir: $(workspaces.source.path)
-              securityContext:
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop: [ALL]
-              script: |
-                #!/bin/sh
-                set -e
-                SCHEMA='https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/{{.ResourceKind}}-{{.ResourceAPIVersion}}.json'
-                # skip Helm chart metadata/values/templates and tool configs (not manifests)
-                find . \( -path ./.git -o -path '*/templates' \) -prune -o -type f \
-                  \( -name '*.yaml' -o -name '*.yml' \) \
-                  ! -name Chart.yaml ! -name 'values*.yaml' ! -name Taskfile.yaml ! -name devenv.yaml -print \
-                  | xargs /kubeconform \
-                    -strict \
-                    -summary \
-                    -ignore-missing-schemas \
-                    -schema-location "$SCHEMA" \
-                    -schema-location default
+          - {name: source, workspace: source}
+
+      - name: render-kustomize
+        runAfter: [clone]
+        taskRef:
+          resolver: cluster
+          params:
+            - {name: kind, value: task}
+            - {name: namespace, value: tekton-catalog}
+            - {name: name, value: kustomize-build}
+        workspaces:
+          - {name: source, workspace: source}
+
+      - name: render-helm
+        runAfter: [clone]
+        taskRef:
+          resolver: cluster
+          params:
+            - {name: kind, value: task}
+            - {name: namespace, value: tekton-catalog}
+            - {name: name, value: helm-template}
+        workspaces:
+          - {name: source, workspace: source}
 
       - name: scan-secrets
         runAfter: [clone]
+        taskRef:
+          resolver: cluster
+          params:
+            - {name: kind, value: task}
+            - {name: namespace, value: tekton-catalog}
+            - {name: name, value: gitleaks}
         workspaces:
-          - name: source
-            workspace: source
-        taskSpec:
-          workspaces:
-            - name: source
-          steps:
-            - name: gitleaks
-              image: ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
-              workingDir: $(workspaces.source.path)
-              securityContext:
-                allowPrivilegeEscalation: false
-                capabilities:
-                  drop: [ALL]
-              command: [gitleaks]
-              args: [detect, --no-git, -v, --redact, --source=.]
+          - {name: source, workspace: source}

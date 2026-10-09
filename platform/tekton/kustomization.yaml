@@ -7,7 +7,6 @@ resources:
   - https://github.com/tektoncd/dashboard/releases/download/v0.73.0/release.yaml
   - https://github.com/tektoncd/pipelines-as-code/releases/download/v0.51.0/release.k8s.yaml
   - pac-network-policy.yaml
-  - legacy-cicd
 
 patches:
   - patch: |
@@ -41,7 +40,7 @@ patches:
         labels:
           policy.home.arpa/allow-hostpath: "true"
           policy.home.arpa/platform-tier: "true"
-  # only resolve Tasks from the shared catalog (and the legacy cicd namespace)
+  # only resolve Tasks from the shared catalog
   # so one project can't pull Tasks out of another project's namespace
   - patch: |
       apiVersion: v1
@@ -50,4 +49,4 @@ patches:
         name: cluster-resolver-config
         namespace: tekton-pipelines-resolvers
       data:
-        allowed-namespaces: "tekton-catalog,cicd"
+        allowed-namespaces: "tekton-catalog"

@@ -1,0 +1,26 @@
+# CI for this repository: lint, validate and render everything; no image builds.
+name: homelab-gitops
+
+repository:
+  # Forgejo pull-mirrors github.com/gwg313/homelab-gitops; PaC gets the
+  # mirror's push webhooks.
+  url: https://git.gwg313.xyz/gwg313/homelab-gitops
+  provider: forgejo
+  secretName: pac-git-token
+
+build:
+  enabled: false
+
+# kustomize remote resources and Helm chart repositories
+egressFQDNs:
+  - github.com
+  - release-assets.githubusercontent.com
+  - objects.githubusercontent.com
+  - helm.goharbor.io
+  - helm.plane.so
+  - charts.jetstack.io
+  - kyverno.github.io
+  - prometheus-community.github.io
+  - kubernetes-sigs.github.io
+  - bitnami.github.io
+  - helm.cilium.io

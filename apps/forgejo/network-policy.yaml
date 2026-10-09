@@ -26,9 +26,12 @@ spec:
         - ports:
             - port: "3000"
               protocol: TCP
+    # CI pipelines and image builds (namespaces from ci/charts/ci-project)
     - fromEndpoints:
         - matchLabels:
-            io.kubernetes.pod.namespace: cicd
+            k8s:io.cilium.k8s.namespace.labels.ci.home.arpa/role: pipeline
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.ci.home.arpa/role: build
       toPorts:
         - ports:
             - port: "3000"
