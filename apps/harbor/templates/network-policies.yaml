@@ -51,9 +51,13 @@ spec:
     # CI image builds (ci/charts/ci-project build-* namespaces). They reach
     # registry.gwg313.xyz through the shared gateway, but Cilium enforces
     # this policy against the original pod, not the gateway.
+    # build namespaces push images; pipeline namespaces only check whether a
+    # tag exists (content-tag)
     - fromEndpoints:
         - matchLabels:
             k8s:io.cilium.k8s.namespace.labels.ci.home.arpa/role: build
+        - matchLabels:
+            k8s:io.cilium.k8s.namespace.labels.ci.home.arpa/role: pipeline
       toPorts:
         - ports:
             - port: "8080"

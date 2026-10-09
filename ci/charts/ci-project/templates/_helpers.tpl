@@ -67,3 +67,32 @@ ci.home.arpa/project: {{ include "ci-project.name" . }}
           protocol: TCP
 {{- end }}
 {{- end -}}
+
+{{/*
+Egress to Harbor through the shared gateway. The gateway's Envoy also checks
+the client's egress against the backend it proxies to, so harbor-core itself
+must be allowed too.
+*/}}
+{{- define "ci-project.registryEgress" -}}
+- toEntities:
+    - ingress
+  toPorts:
+    - ports:
+        - port: "443"
+          protocol: TCP
+- toFQDNs:
+    - matchName: {{ .Values.build.registryHost | quote }}
+  toPorts:
+    - ports:
+        - port: "443"
+          protocol: TCP
+- toEndpoints:
+    - matchLabels:
+        io.kubernetes.pod.namespace: harbor
+        app: harbor
+        component: core
+  toPorts:
+    - ports:
+        - port: "8080"
+          protocol: TCP
+{{- end }}

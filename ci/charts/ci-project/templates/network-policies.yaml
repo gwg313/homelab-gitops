@@ -17,6 +17,10 @@ spec:
         - ports:
             - port: "443"
               protocol: TCP
+    {{- if .Values.build.enabled }}
+    # registry reads (content-tag checks whether an image tag exists)
+    {{- include "ci-project.registryEgress" . | nindent 4 }}
+    {{- end }}
 {{- if .Values.build.enabled }}
 ---
 # Only the build-trigger SA talks to the API server (to create BuildRuns).
@@ -50,28 +54,6 @@ spec:
   endpointSelector: {}
   egress:
     {{- include "ci-project.gitEgress" . | nindent 4 }}
-    # Harbor (push, base image pulls via proxy-cache) through the shared gateway
-    - toEntities:
-        - ingress
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
-    - toFQDNs:
-        - matchName: {{ .Values.build.registryHost | quote }}
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
-    # The gateway's Envoy also checks this namespace's egress against the
-    # backend it proxies to, so harbor-core itself must be allowed.
-    - toEndpoints:
-        - matchLabels:
-            io.kubernetes.pod.namespace: harbor
-            app: harbor
-            component: core
-      toPorts:
-        - ports:
-            - port: "8080"
-              protocol: TCP
+    # Harbor: push, base image pulls via proxy-cache
+    {{- include "ci-project.registryEgress" . | nindent 4 }}
 {{- end }}
